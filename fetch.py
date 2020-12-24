@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 
 import sys, os
 import requests
@@ -13,7 +13,7 @@ def forms(base_url, aut, projectId):
     r = requests.get(f'{base_url}/v1/projects/{projectId}/forms', auth = aut)
     return r
 
-def submissions(base_url, aut, rojectId, formId):
+def submissions(base_url, aut, projectId, formId):
     """Fetch a list of submission instances for a given form."""
     r = requests.get(f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions', auth = aut)
     return r

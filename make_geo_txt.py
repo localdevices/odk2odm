@@ -2,20 +2,23 @@
 """
 yah
 """
-
+################################################################################
 import sys, os
 import csv
 import re
 import argparse
 import string
     
-def make_geo_txt(infile, colrange, lonc, latc, proj):
+def make_geo_txt(infile, colrange, lonc,
+                 latc, elec, accc, proj):
     """
     make a list of photo locations so that ODM
     can process them efficiently.
     """
     latcol = col2num(latc)
     loncol = col2num(lonc)
+    elecol = col2num(elec)
+    acccol = col2num(accc)
     sites = list(csv.reader(open(infile)))[1:]
     cols = parse_range(colrange)
     outfile = os.path.join(os.path.dirname(infile), 'geo.txt')
@@ -26,7 +29,13 @@ def make_geo_txt(infile, colrange, lonc, latc, proj):
             for col in cols:
                 w.writerow([site[col-1],
                             site[int(loncol) - 1],
-                            site[int(latcol) - 1]])
+                            site[int(latcol) - 1],
+                            site[int(elecol) - 1],
+                            '0','0','0',
+                            site[int(acccol) - 1],
+                            site[int(acccol) - 1],
+                            ])
+                            
 
 def col2num(col):
     """Excel column letters to 1-based column number"""
@@ -55,7 +64,7 @@ def parse_range(instring):
          else i[0] for i in numparts])
     
     return [int(item) for sublist in l for item in sublist]
-        
+
 
 if __name__ == "__main__":
     """
@@ -80,6 +89,10 @@ if __name__ == "__main__":
                    help = ('longitude column '
                            'can be 1-based column number or '
                            'spreadsheet column letters'))
+    p.add_argument('-ele', '--elevation',
+                   help = 'GPS elevation column')
+    p.add_argument('-acc', '--accuracy',
+                   help = 'Estimated GPS accuracy column')
     p.add_argument('-proj', '--projection',
                    help = 'Coordinate Reference System',
                    default = 'EPSG:4326')
@@ -87,4 +100,5 @@ if __name__ == "__main__":
 
     make_geo_txt(args.inputfile, args.range,
                  args.longitude, args.latitude,
+                 args.elevation, args.accuracy,
                  args.projection)

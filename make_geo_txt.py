@@ -1,6 +1,23 @@
 #! /usr/bin/python3
 """
-yah
+Produces a geo.txt file for use by OpenDroneMap from a table of ODK 
+form submissions.
+
+Takes an input CSV file of submissions with multiple photos per survey 
+point as a positional argument. 
+
+Takes four flag arguments specifying the columns in the input file for lat, 
+lon, elevation, and accuracy: -lat, -lon, -ele, and -acc.
+
+Takes a flag argument, -r or --range, which specifies all of the columns where 
+photos are found. For example, "15-26,28-39,41-52" will capture three sets of
+12 consecutive columns. One-based column numbering to be consistent with a 
+spreadsheet, which is the most likely place users will be counting columns.  
+
+Takes and optional flag argument, -proj, with a Coordinate Reference System
+string (which can be in whatever format ODM will accept; this script doesn't 
+care).
+
 """
 ################################################################################
 import sys, os

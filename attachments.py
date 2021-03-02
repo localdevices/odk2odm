@@ -23,7 +23,7 @@ if __name__ == '__main__':
     p.add_argument('-pw', '--password', help = 'ODK Central password')
     p.add_argument('-p', '--project', help = 'the project in question')
     p.add_argument('-f', '--form', help = 'Unique name of the relevant form')
-    #p.add_argument('-i', '--instance', help = 'Submission instance ID')
+    p.add_argument('-i', '--instance', help = 'Submission instance ID')
 
     args = p.parse_args()
 
@@ -45,7 +45,6 @@ if __name__ == '__main__':
                                      )
         for attachment in atts.json():
             print(attachment['name'])
-
     
     threads = []
 

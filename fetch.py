@@ -17,10 +17,11 @@ def submissions(base_url, aut, projectId, formId):
     """Fetch a list of submission instances for a given form."""
     r = requests.get(f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions', auth = aut)
     return r
-    
+
+# Broken. Doesn't work with ?media=false appended
 def csv(base_url, aut, projectId, formId):
     """Fetch a CSV file of the submissions to a survey form."""
-    r = requests.get(f'{base_url}/v1/projects/{projectId}/forms/{formId}.csv', auth = aut)
+    r = requests.get(f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip', auth = aut)
     
 def attachment_list(base_url, aut, projectId, formId, instanceId):
     """Fetch an individual media file attachment."""

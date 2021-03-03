@@ -5,9 +5,6 @@ import fetch
 import argparse
 import threading
 
-# TODO see if this can be empty without breaking shit
-# import credentials
-
 def grab_media(url, project, formID):
     att = fetch.attachment(base_url, projectId, formId, instanceId, filename, authtuple)
     return att

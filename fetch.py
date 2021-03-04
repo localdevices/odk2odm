@@ -5,33 +5,42 @@ import requests
 
 def projects(base_url, aut):
     """Fetch a list of projects on an ODK Central server."""
-    r = requests.get(f'{base_url}/v1/projects', auth = aut)
-    return r
+    url = f'{base_url}/v1/projects'
+    return requests.get(url, auth = aut)
 
 def forms(base_url, aut, projectId):
     """Fetch a list of forms in a project."""
-    r = requests.get(f'{base_url}/v1/projects/{projectId}/forms', auth = aut)
-    return r
+    url = f'{base_url}/v1/projects/{projectId}/forms'
+    return requests.get(url, auth = aut)
 
 def submissions(base_url, aut, projectId, formId):
     """Fetch a list of submission instances for a given form."""
-    r = requests.get(f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions', auth = aut)
-    return r
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions'
+    return requests.get(url, auth = aut)
 
-# Broken. Doesn't work with ?media=false appended
-def csv(base_url, aut, projectId, formId):
+# Should work with ?media=false appended but doesn't. Use the odata version.
+def csv_submissions(base_url, aut, projectId, formId):
     """Fetch a CSV file of the submissions to a survey form."""
-    r = requests.get(f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip', auth = aut)
-    
+    f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip'
+    return requests.get(url, auth = aut)
+
+def odata_submissions(base_url, aut, projectId, formId):
+    """Fetch the submissions using the odata api. returns a list of dicts"""    
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/Submissions'
+    submissions = requests.get(url, auth = aut).json['value']
+    return submissions
+
 def attachment_list(base_url, aut, projectId, formId, instanceId):
     """Fetch an individual media file attachment."""
-    r = requests.get(f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/{instanceId}/attachments', auth = aut)
-    return r
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
+        '{instanceId}/attachments'
+    return requests.get(url, auth = aut)
 
 def attachment(base_url, aut, projectId, formId, instanceId, filename):
     """Fetch a specific attachment by filename from a submission to a form."""
-    r = requests.get(f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/{instanceId}/attachments/{filename}', auth = aut)
-    return r
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
+        '{instanceId}/attachments/{filename}'
+    return requests.get(url, auth = aut)
 
 if __name__ == '__main__':
     pass

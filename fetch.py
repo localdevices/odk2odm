@@ -25,9 +25,13 @@ def csv_submissions(base_url, aut, projectId, formId):
     return requests.get(url, auth = aut)
 
 def odata_submissions(base_url, aut, projectId, formId):
-    """Fetch the submissions using the odata api. returns a list of dicts"""    
+    """
+    Fetch the submissions using the odata api. 
+    use submissions.json()['value'] to get a list of dicts, wherein 
+    each dict is a single submission with the form question names as keys.
+    """    
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/Submissions'
-    submissions = requests.get(url, auth = aut).json['value']
+    submissions = requests.get(url, auth = aut)
     return submissions
 
 def attachment_list(base_url, aut, projectId, formId, instanceId):

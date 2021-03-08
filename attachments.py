@@ -27,9 +27,15 @@ def all_attachments_from_form(url, aut, project, form, outdir):
      for submission in submissions.json():
          sub_id = submission['instanceId']
          print(sub_id)
-         atts = fetch.attachment_list(url, aut, project, form, sub_id)
-         for attachment in atts.json():
-             print(attachment)
+         attachments = fetch.attachment_list(url, aut, project, form, sub_id)
+         for attachment in attachments.json():
+             fn = attachment['name']
+             attresp = fetch.attachment(url, aut, project, form,
+                                               sub_id, fn)
+             outfilepath = os.path.join(outdir, fn)
+             with open(outfilepath, 'w') as outfile:
+                 outfile.write(attresp.content)
+                 
             
 if __name__ == '__main__':
     p = argparse.ArgumentParser()

@@ -33,7 +33,7 @@ def all_attachments_from_form(url, aut, project, form, outdir):
              attresp = fetch.attachment(url, aut, project, form,
                                                sub_id, fn)
              outfilepath = os.path.join(outdir, fn)
-             with open(outfilepath, 'w') as outfile:
+             with open(outfilepath, 'wb') as outfile:
                  outfile.write(attresp.content)
                  
             

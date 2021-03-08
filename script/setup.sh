@@ -30,7 +30,7 @@ echo Done.
 echo To use the utilities here, activate the virtual environment with:
 echo source venv/bin/activate
 echo
-echo (and simply type deactivate to get out when you are done)
+echo And type deactivate to get out when you are done.
 
 
 

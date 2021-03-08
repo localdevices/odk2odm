@@ -21,26 +21,15 @@ def threaded_download():
     for thread in threads:
         thread.join()
 
-def all_attachments_from_form(url, aut, project, formID):
-     submissions = fetch.submissions(args.base_url,
-                                     (args.user, args.password),
-                                     args.project,
-                                     args.form,
-                                     )
+def all_attachments_from_form(url, aut, project, form, outdir):
+     submissions = fetch.submissions(url, aut, project, form)
 
      for submission in submissions.json():
          print(submission['instanceId'])
-         atts = fetch.attachment_list(args.base_url,
-                                      (args.user,
-                                       args.password),
-                                      args.project,
-                                      args.form,
-                                      submission['instanceId']
-                                      )
+         atts = fetch.attachment_list(url, aut, project, form,
+                                      submission['instanceId'])
          for attachment in atts.json():
              print(attachment['name'])
-
-
             
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
@@ -63,3 +52,6 @@ if __name__ == '__main__':
 
     args = p.parse_args()
 
+    all_attachments_from_form(args.bas_url, (args.user, args.password),
+                              args.project, args.form, args.output_directory)
+                              

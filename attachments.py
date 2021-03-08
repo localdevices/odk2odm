@@ -52,6 +52,6 @@ if __name__ == '__main__':
 
     args = p.parse_args()
 
-    all_attachments_from_form(args.bas_url, (args.user, args.password),
+    all_attachments_from_form(args.base_url, (args.user, args.password),
                               args.project, args.form, args.output_directory)
                               

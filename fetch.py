@@ -37,13 +37,13 @@ def odata_submissions(base_url, aut, projectId, formId):
 def attachment_list(base_url, aut, projectId, formId, instanceId):
     """Fetch an individual media file attachment."""
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
-        '{instanceId}/attachments'
+        f'{instanceId}/attachments'
     return requests.get(url, auth = aut)
 
 def attachment(base_url, aut, projectId, formId, instanceId, filename):
     """Fetch a specific attachment by filename from a submission to a form."""
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
-        '{instanceId}/attachments/{filename}'
+        f'{instanceId}/attachments/{filename}'
     return requests.get(url, auth = aut)
 
 if __name__ == '__main__':

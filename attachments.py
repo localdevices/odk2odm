@@ -27,8 +27,7 @@ def all_attachments_from_form(url, aut, project, form, outdir):
      for submission in submissions.json():
          sub_id = submission['instanceId']
          print(sub_id)
-         atts = fetch.attachment_list(url, aut, project, form,
-                                      sub_id)
+         atts = fetch.attachment_list(url, aut, project, form, sub_id)
          for attachment in atts.json():
              print(attachment)
             

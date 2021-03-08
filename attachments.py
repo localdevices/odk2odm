@@ -6,27 +6,10 @@ import argparse
 import threading
 import csv
 
-def csv_from_odata(url, aut, project, form, outdir):
-    """Write a CSV to a specified directory using odata for a specified form"""
-    response = fetch.odata_submissions(url, aut, project, formID)
-    submissions = response.json()['value']
-    # Making the unsafe assumption that all rows have the same headers
-    # and simply grabbing the headers from the first row
-    headers = [x for x in submissions[0]]
-    outfilename = os.path.join(outdir, f'{form}.csv')
-    with open(outfilename, 'w') as outfile:
-        w = csv.writer(outfile, delimiter = ';')
-        w.writerow(headers)
-        for submission in submissions:
-            row = []
-            for header in headers:
-                # TODO: expand geo column to lat, lon, elevation, accuracy
-                row.append(submission[header])
-            w.writerow(row)
-
 def threaded_download():
     """Grab lots of photos using threaded concurrent download"""
-        
+    # NOT DONE
+    
     threads = []
 
     for chunk in chunks:
@@ -44,18 +27,18 @@ def all_attachments_from_form(url, aut, project, formID):
                                      args.project,
                                      args.form,
                                      )
-                                    
-    for submission in submissions.json():
-        print(submission['instanceId'])
-        atts = fetch.attachment_list(args.base_url,
-                                     (args.user,
-                                      args.password),
-                                     args.project,
-                                     args.form,
-                                     submission['instanceId']
-                                     )
-        for attachment in atts.json():
-            print(attachment['name'])
+
+     for submission in submissions.json():
+         print(submission['instanceId'])
+         atts = fetch.attachment_list(args.base_url,
+                                      (args.user,
+                                       args.password),
+                                      args.project,
+                                      args.form,
+                                      submission['instanceId']
+                                      )
+         for attachment in atts.json():
+             print(attachment['name'])
 
 
             

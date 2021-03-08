@@ -29,7 +29,7 @@ def all_attachments_from_form(url, aut, project, form, outdir):
          atts = fetch.attachment_list(url, aut, project, form,
                                       submission['instanceId'])
          for attachment in atts.json():
-             print(attachment['name'])
+             print(attachment)
             
 if __name__ == '__main__':
     p = argparse.ArgumentParser()

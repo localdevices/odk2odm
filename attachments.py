@@ -7,6 +7,7 @@ import threading
 import csv
 
 def csv_from_odata(url, aut, project, form, outdir):
+    """Write a CSV to a specified directory using odata for a specified form"""
     response = fetch.odata_submissions(url, aut, project, formID)
     submissions = response.json()['value']
     # Making the unsafe assumption that all rows have the same headers
@@ -22,6 +23,20 @@ def csv_from_odata(url, aut, project, form, outdir):
                 # TODO: expand geo column to lat, lon, elevation, accuracy
                 row.append(submission[header])
             w.writerow(row)
+
+def threaded_download():
+    """Grab lots of photos using threaded concurrent download"""
+        
+    threads = []
+
+    for chunk in chunks:
+        thread = threading.Thread(target=managechunk,
+                                  args=(chunk, outdirpath, timeout))
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
 def all_attachments_from_form(url, aut, project, formID):
      submissions = fetch.submissions(args.base_url,
@@ -42,6 +57,8 @@ def all_attachments_from_form(url, aut, project, formID):
         for attachment in atts.json():
             print(attachment['name'])
 
+
+            
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('-url', '--base_url',
@@ -63,14 +80,3 @@ if __name__ == '__main__':
 
     args = p.parse_args()
 
-    
-    threads = []
-
-    for chunk in chunks:
-        thread = threading.Thread(target=managechunk,
-                                  args=(chunk, outdirpath, timeout))
-        threads.append(thread)
-        thread.start()
-
-    for thread in threads:
-        thread.join()

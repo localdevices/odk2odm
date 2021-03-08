@@ -1,14 +1,14 @@
 #!/bin/bash
 
-echo making sure we have pip3
+echo making sure we have pip3 and venv
 if [ -x $pip3 ]
 then
     echo setting up virtualenv if not already present
 else
     echo it was not installed, probably installing
-    sudo apt install python3-pip
+    sudo apt install python3-pip python3-venv
 fi
-   
+ 
 if [ -d venv ]
 then
     echo venv was already present, hope it is the right one

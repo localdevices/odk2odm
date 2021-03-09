@@ -4,6 +4,7 @@ import sys, os
 import fetch
 import argparse
 import csv
+import json
 
 def csv_from_odata(url, aut, project, form, outdir):
     """Write a CSV to a specified directory using odata for a specified form"""
@@ -22,7 +23,23 @@ def csv_from_odata(url, aut, project, form, outdir):
                 # TODO: expand geo column to lat, lon, elevation, accuracy
                 row.append(submission[header])
             w.writerow(row)
-            
+
+def jsonpoint_to_tuple(pointstring):
+    """ODK Central returnt point in what is almost a JSON string, 
+    except that it is single-quoted instead of double-quoted, 
+    so Python's JSON module freaks out. This ingests that string and
+    returns a tuple of (lat, lon, elevation, accuracy)"""
+    try:
+        doublequotedpointstring = pointstring.replace("'", '"')
+        jsonpoint = json.loads(doublequotedpointstring)
+        lat = jsonpoint['coordinates'][1]
+        lon = jsonpoint['coordinates'][0]
+        ele = jsonpoint['coordinates'][2]
+        acc = jsonpoint['properties']['accuracy']
+        return (lat, lon, ele, acc)
+    except Exception as e:
+        return None
+    
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('-url', '--base_url',

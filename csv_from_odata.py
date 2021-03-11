@@ -6,25 +6,28 @@ import argparse
 import csv
 import json
 
-def csv_from_odata(url, aut, project, form, outdir):
+def csv_from_odata(url, aut, project, form, outdir, geocol):
     """Write a CSV to a specified directory using odata for a specified form"""
     response = fetch.odata_submissions(url, aut, project, form)
     submissions = response.json()['value']
     # Making the unsafe assumption that all rows have the same headers
     # and simply grabbing the headers from the first row
     headers = [x for x in submissions[0]]
+    newheaders = (headers[: geocol] +
+                  ['lat', 'lon', 'elevation', 'accuracy'] +
+                  headers[geocol :])
     outfilename = os.path.join(outdir, f'{form}.csv')
     with open(outfilename, 'w') as outfile:
         w = csv.writer(outfile, delimiter = ';')
-        w.writerow(headers)
+        w.writerow(newheaders)
         for submission in submissions:
             row = []
             for header in headers:
-                # TODO: expand geo column to lat, lon, elevation, accuracy
                 row.append(submission[header])
-            w.writerow(row)
+            geolist = jsonpoint_to_list(row[geocol - 1])
+            w.writerow(row[: geocol] + geolist + row[geocol :])
 
-def jsonpoint_to_tuple(pointstring):
+def jsonpoint_to_list(pointstring):
     """ODK Central returnt point in what is almost a JSON string, 
     except that it is single-quoted instead of double-quoted, 
     so Python's JSON module freaks out. This ingests that string and
@@ -36,9 +39,9 @@ def jsonpoint_to_tuple(pointstring):
         lon = jsonpoint['coordinates'][0]
         ele = jsonpoint['coordinates'][2]
         acc = jsonpoint['properties']['accuracy']
-        return (lat, lon, ele, acc)
+        return [lat, lon, ele, acc]
     except Exception as e:
-        return None
+        return ['', '', '', '']
     
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
@@ -54,9 +57,11 @@ if __name__ == '__main__':
                    help = 'Unique name of the relevant form')
     p.add_argument('-od', '--output_directory',
                    help = 'Directory to write output files')
+    p.add_argument('-gc', '--geopoint_column',
+                   help = 'Column containing the geopoint, 1-based')
 
     args = p.parse_args()
 
     csv_from_odata(args.base_url, (args.user, args.password), args.project,
-           args.form, args.output_directory)
+                   args.form, args.output_directory, args.geopoint_column)
 

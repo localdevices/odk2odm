@@ -22,6 +22,7 @@ def threaded_download():
         thread.join()
 
 def all_attachments_from_form(url, aut, project, form, outdir):
+    """Downloads all available attachments from a given form"""
      submissions = fetch.submissions(url, aut, project, form)
 
      for submission in submissions.json():
@@ -35,7 +36,12 @@ def all_attachments_from_form(url, aut, project, form, outdir):
              outfilepath = os.path.join(outdir, fn)
              with open(outfilepath, 'wb') as outfile:
                  outfile.write(attresp.content)
-                 
+
+def specified_attachments_from_form(url, aut, project, form, outdir, infile):
+    """Downloads attchments specified in an input text file from a form."""
+    try:
+        inputfile = open(infile)
+        wantedfiles = 
             
 if __name__ == '__main__':
     p = argparse.ArgumentParser()

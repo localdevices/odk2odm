@@ -42,6 +42,8 @@ def specified_attachments_from_form(url, aut, project, form, outdir, infile):
     wantedfiles = []
     try:
         inputfile = open(infile)
+    except Exception as e:
+        print(e)
         
             
 if __name__ == '__main__':

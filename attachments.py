@@ -58,7 +58,7 @@ if __name__ == '__main__':
                    help = 'the project in question')
     p.add_argument('-f', '--form',
                    help = 'Unique name of the relevant form.')
-    p.add_argument('-i', '--instance',
+    p.add_argument('-s', '--submission',
                    help = 'Submission instance ID')
     p.add_argument('-od', '--output_directory',
                    help = 'Directory to write output files.')

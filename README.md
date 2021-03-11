@@ -1,4 +1,4 @@
-# PyODKCentralClient
+# odk2odm
 
 A utility to manage data from Open Data Kit's ODK Central aggregation server, particularly for use with [OpenDroneMap](opendronemap.org) (ODM).
 

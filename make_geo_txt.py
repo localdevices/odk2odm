@@ -36,7 +36,7 @@ def make_geo_txt(infile, colrange, lonc,
     loncol = col2num(lonc)
     elecol = col2num(elec)
     acccol = col2num(accc)
-    sites = list(csv.reader(open(infile)))[1:]
+    sites = list(csv.reader(open(infile), delimiter = ';'))[1:]
     cols = parse_range(colrange)
     outfile = os.path.join(os.path.dirname(infile), 'geo.txt')
     with (open(outfile, 'w')) as csvfile:
@@ -44,16 +44,21 @@ def make_geo_txt(infile, colrange, lonc,
         w.writerow([proj])
         for site in sites:
             for col in cols:
-                w.writerow([site[col-1],
-                            site[int(loncol) - 1],
-                            site[int(latcol) - 1],
-                            site[int(elecol) - 1],
-                            '0','0','0',
-                            site[int(acccol) - 1],
-                            site[int(acccol) - 1],
-                            ])
-                            
-
+                try:
+                    if site[col - 1]:
+                        w.writerow([site[col - 1],
+                                    site[int(loncol) - 1],
+                                    site[int(latcol) - 1],
+                                    site[int(elecol) - 1],
+                                    '0','0','0',
+                                    site[int(acccol) - 1],
+                                    site[int(acccol) - 1],
+                                    ])
+                except Exception as e:
+                    print(site)
+                    print(col)
+                    print(e)
+                    
 def col2num(col):
     """Excel column letters to 1-based column number"""
     if col.isdigit():

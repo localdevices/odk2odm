@@ -33,10 +33,10 @@ def write_file_lists(indir):
     (goodfiles, badfiles) = checkimages(indir)
     with open(goodfilepath, 'w') as gf:
         for f in goodfiles:
-            gf.write(f)
+            gf.write(f'{f}\n')
     with open(badfilepath, 'w') as bf:
         for f in badfiles:
-            bf.write(f)
+            bf.write(f'{f}\n')
     
 
 if __name__ == "__main__":

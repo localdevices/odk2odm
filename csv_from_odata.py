@@ -25,17 +25,17 @@ def csv_from_odata(url, aut, project, form, outdir, gc):
             row = []
             for header in headers:
                 row.append(submission[header])
-            geolist = jsonpoint_to_list(row[geocol - 1])
+            gc_contents = row[geocol - 1]
+            geolist = jsonpoint_to_list(gc_contents)
             w.writerow(row[: geocol] + geolist + row[geocol :])
 
-def jsonpoint_to_list(pointstring):
+def jsonpoint_to_list(po):
     """ODK Central returnt point in what is almost a JSON string, 
     except that it is single-quoted instead of double-quoted, 
     so Python's JSON module freaks out. This ingests that string and
     returns a tuple of (lat, lon, elevation, accuracy)"""
-    print(pointstring)
     try:
-        doublequotedpointstring = pointstring.replace("'", '"')
+        doublequotedpointstring = po.replace("'", '"')
         jsonpoint = json.loads(doublequotedpointstring)
         lat = jsonpoint['coordinates'][1]
         lon = jsonpoint['coordinates'][0]
@@ -43,8 +43,19 @@ def jsonpoint_to_list(pointstring):
         acc = jsonpoint['properties']['accuracy']
         return [lat, lon, ele, acc]
     except Exception as e:
-        return ['', '', '', '']
-    
+        #print(e)
+        #print(po)
+        try:
+            lat = po['coordinates'][1]
+            lon = po['coordinates'][0]
+            ele = po['coordinates'][2]
+            acc = po['properties']['accuracy']
+            return [lat, lon, ele, acc]
+            return ['', '', '', '']
+        except Exception as f:
+            #print(f)
+            return ['', '', '', '']
+        
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('-url', '--base_url',

@@ -13,7 +13,7 @@ def csv_from_odata(url, aut, project, form, outdir, geocol):
     # Making the unsafe assumption that all rows have the same headers
     # and simply grabbing the headers from the first row
     headers = [x for x in submissions[0]]
-    newheaders = (headers[: geocol] +
+    newheaders = (headers[: int(geocol)] +
                   ['lat', 'lon', 'elevation', 'accuracy'] +
                   headers[geocol :])
     outfilename = os.path.join(outdir, f'{form}.csv')

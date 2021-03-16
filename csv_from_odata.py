@@ -14,7 +14,7 @@ def csv_from_odata(url, aut, project, form, outdir, gc):
     # and simply grabbing the headers from the first row
     geocol = int(gc)
     headers = [x for x in submissions[0]]
-    newheaders = (headers[: int(geocol)] +
+    newheaders = (headers[: geocol] +
                   ['lat', 'lon', 'elevation', 'accuracy'] +
                   headers[geocol :])
     outfilename = os.path.join(outdir, f'{form}.csv')
@@ -33,6 +33,7 @@ def jsonpoint_to_list(pointstring):
     except that it is single-quoted instead of double-quoted, 
     so Python's JSON module freaks out. This ingests that string and
     returns a tuple of (lat, lon, elevation, accuracy)"""
+    print(pointstring)
     try:
         doublequotedpointstring = pointstring.replace("'", '"')
         jsonpoint = json.loads(doublequotedpointstring)

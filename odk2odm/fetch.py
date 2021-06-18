@@ -36,7 +36,7 @@ That'll return a dictionary with the attributes of the first project on the serv
 To see the name of the first project:
 
 r.json()[0]['name']
- 
+
 """
 
 import sys, os
@@ -58,12 +58,14 @@ def submissions(base_url, aut, projectId, formId):
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions'
     return requests.get(url, auth = aut)
 
+
 # Should work with ?media=false appended but doesn't.
-# Probabaly a bug in ODK Central. Use the odata version; it works.
+# Probably a bug in ODK Central. Use the odata version; it works.
 def csv_submissions(base_url, aut, projectId, formId):
     """Fetch a CSV file of the submissions to a survey form."""
-    f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip'
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip'
     return requests.get(url, auth = aut)
+
 
 def odata_submissions(base_url, aut, projectId, formId):
     """
@@ -75,11 +77,13 @@ def odata_submissions(base_url, aut, projectId, formId):
     submissions = requests.get(url, auth = aut)
     return submissions
 
+
 def attachment_list(base_url, aut, projectId, formId, instanceId):
     """Fetch an individual media file attachment."""
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
         f'{instanceId}/attachments'
     return requests.get(url, auth = aut)
+
 
 def attachment(base_url, aut, projectId, formId, instanceId, filename):
     """Fetch a specific attachment by filename from a submission to a form."""
@@ -87,12 +91,17 @@ def attachment(base_url, aut, projectId, formId, instanceId, filename):
         f'{instanceId}/attachments/{filename}'
     return requests.get(url, auth = aut)
 
+
 def create_project(base_url, aut, project_name):
     """Create a new project on an ODK Central server"""
     url = f'{base_url}/v1/projects'
     return requests.post(url, auth = aut, json = {'name': project_name})
 
+
 def delete_project(base_url, aut, project_id):
     """Permanently delete project from an ODK Central server. Probably don't."""
     url = f'{base_url}/v1/projects/{project_id}'
     return requests.delete(url, auth = aut)
+
+if __name__ == '__main__':
+    pass

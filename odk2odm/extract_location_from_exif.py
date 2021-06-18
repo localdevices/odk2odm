@@ -18,10 +18,11 @@ Requires the exifread library, available on pip (pip install exifread).
 Might be sensible to rewrite using PIL (or pillow) library to make it a more
 common dependency. Not urgent.
 """
-
-import sys, os
+import os
+import sys
 import csv
 import exifread
+
 
 def scandir(dir):
     """Walk recursively through a directory and return a list of all files in it"""
@@ -30,6 +31,7 @@ def scandir(dir):
         for f in files:
             filelist.append(os.path.join(path, f))
     return filelist
+
 
 def exif_GPS_to_decimal_degrees(intag):
     """
@@ -41,10 +43,12 @@ def exif_GPS_to_decimal_degrees(intag):
     s = float(intag.values[2].num) / float(intag.values[2].den)
     return d + (m / 60.0) + (s / 3600.0)
 
+
 def exif_GPS_alt_to_decimal_m(intag):
     alt = intag.values[0]
     return alt.decimal()
-    
+
+
 def extract_location(infile):
     """Return the GPS lat and long of a photo from EXIF in decimal degrees"""
     with open(infile, 'rb') as f:
@@ -69,8 +73,8 @@ def extract_location(infile):
         except Exception as e:
             print(e)
             print('The photo {} failed for some reason'.format(infile))
-        
-    
+
+
 def create_geotag_list(indir):
     """Create a CSV file with a list of photos and their lat & long"""
     outfile = indir + '.csv'
@@ -87,8 +91,8 @@ def create_geotag_list(indir):
             if(crds):
                 writer.writerow([image_filename, image_file, image_dirname,
                                  crds[0], crds[1], crds[2]]) 
-    
-    
+
+
 if __name__ == "__main__":
     """Expects a directory as the sole argument"""
     create_geotag_list(sys.argv[1])

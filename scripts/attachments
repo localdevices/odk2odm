@@ -1,14 +1,13 @@
 #!/usr/bin/python3
-
-import sys, os
-import fetch
+import os
+from odk2odm import fetch
 import argparse
 import threading
-import csv
+
 
 def threaded_download():
     """Grab lots of photos using threaded concurrent download"""
-    # NOT DONE
+    # FIXME: NOT DONE
     
     threads = []
 
@@ -21,6 +20,7 @@ def threaded_download():
     for thread in threads:
         thread.join()
 
+
 def all_attachments_from_form(url, aut, project, form, outdir):
     """Downloads all available attachments from a given form"""
     submissions = fetch.submissions(url, aut, project, form)
@@ -32,10 +32,11 @@ def all_attachments_from_form(url, aut, project, form, outdir):
         for attachment in attachments.json():
             fn = attachment['name']
             attresp = fetch.attachment(url, aut, project, form,
-                                               sub_id, fn)
+                                       sub_id, fn)
             outfilepath = os.path.join(outdir, fn)
             with open(outfilepath, 'wb') as outfile:
                 outfile.write(attresp.content)
+
 
 def specified_attachments_from_form(url, aut, project, form, outdir, infile):
     """Downloads attachments specified in a text file."""
@@ -47,29 +48,29 @@ def specified_attachments_from_form(url, aut, project, form, outdir, infile):
         
             
 if __name__ == '__main__':
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(usage="usage: attachments [options]"
+)
     p.add_argument('-url', '--base_url',
-                   help = 'Server URL')
+                   help='Server URL')
     p.add_argument('-u', '--user',
-                   help = 'ODK Central username (usually email).')
+                   help='ODK Central username (usually email).')
     p.add_argument('-pw', '--password',
-                   help = 'ODK Central password.')
+                   help='ODK Central password.')
     p.add_argument('-p', '--project',
-                   help = 'the project in question')
+                   help='the project in question')
     p.add_argument('-f', '--form',
-                   help = 'Unique name of the relevant form.')
+                   help='Unique name of the relevant form.')
     p.add_argument('-s', '--submission',
-                   help = 'Submission instance ID')
+                   help='Submission instance ID')
     p.add_argument('-od', '--output_directory',
-                   help = 'Directory to write output files.')
+                   help='Directory to write output files.')
     p.add_argument('-t', '--threads',
-                   help = 'Maximum number of download threads', default = 10)
+                   help='Maximum number of download threads', default=10)
     p.add_argument('-i', '--input_file',
-                   help = 'Text file listing desired attachments. '\
+                   help='Text file listing desired attachments. '\
                    'Should contain only filenames separated by line breaks.')
 
     args = p.parse_args()
 
     all_attachments_from_form(args.base_url, (args.user, args.password),
                               args.project, args.form, args.output_directory)
-                              

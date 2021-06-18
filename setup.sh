@@ -15,22 +15,19 @@ if [ -d venv ]
 then
     echo venv was already present, hope it is the right one
 else
-    python3 -m venv venv
+    python3 -m venv odk2odm_venv
 fi
 
 echo creating and activating virtual environmnet
 pip3 install virtualenv
-source venv/bin/activate
+source odk2odm_venv/bin/activate
 
-echo installing requests
-pip install requests
-
-echo installing exifread
-pip install exifread
+echo installing odk2odm library and dependencies
+pip install .
 
 echo Done.
 echo To use the utilities here, activate the virtual environment with:
-echo source venv/bin/activate
+echo source odk2odm_venv/bin/activate
 echo
 echo And type deactivate to get out when you are done.
 

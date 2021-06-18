@@ -39,6 +39,7 @@ def all_attachments_from_form(url, aut, project, form, outdir):
 
 def specified_attachments_from_form(url, aut, project, form, outdir, infile):
     """Downloads attachments specified in a text file."""
+    # TODO: COMPLETE
     wantedfiles = []
     try:
         inputfile = open(infile)

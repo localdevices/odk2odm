@@ -1,4 +1,43 @@
 #!/usr/bin/python3
+"""Utilities for interacting with ODK Central API
+
+These are functions that return replies from an ODK Central server. https://docs.getodk.org/central-intro/
+
+These functions mostly return requests.Response() objects. That object contains status code of the request (200, 404, etc), and the data itself, as well as a number of other attributes.
+
+Here's a great reference on how to use the returned objects: https://www.w3schools.com/python/ref_requests_response.asp
+
+The base_url parameter is just the URL of the ODK Central server. The extra characters needed to actually reach the API ('/v1/') are built into the functions.
+
+The aut parameter is a tuple of the username and password used to authenticate the requester on the server, in the form (username, password). The passwords are in plain text; ideally this should be a hash but I haven't gotten around to that.
+
+Simple usage:
+If you want to see if a server is working and you are able to reach it, use the projects function:
+
+url = 'https://3dstreetview.org'
+aut = ('myusername', 'mypassword')
+r = fetch.projects(url, aut)
+r.status_code
+
+If all went well, that'll return '200'. If you got the username/password wrong (or aren't authorized on the server for whatever reason) it'll return '401', or '404' if the server isn't found at all.
+
+To see the data:
+
+r.json()
+
+That'll return a JSON-formatted string with information about the projects on the server.
+
+To see the information on a single project:
+
+r.json()[0]
+
+That'll return a dictionary with the attributes of the first project on the server.
+
+To see the name of the first project:
+
+r.json()[0]['name']
+ 
+"""
 
 import sys, os
 import requests
@@ -18,7 +57,8 @@ def submissions(base_url, aut, projectId, formId):
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions'
     return requests.get(url, auth = aut)
 
-# Should work with ?media=false appended but doesn't. Use the odata version.
+# Should work with ?media=false appended but doesn't.
+# Probabaly a bug in ODK Central. Use the odata version; it works.
 def csv_submissions(base_url, aut, projectId, formId):
     """Fetch a CSV file of the submissions to a survey form."""
     f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip'
@@ -45,10 +85,3 @@ def attachment(base_url, aut, projectId, formId, instanceId, filename):
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
         f'{instanceId}/attachments/{filename}'
     return requests.get(url, auth = aut)
-
-if __name__ == '__main__':
-    pass
-
-    
-
-    

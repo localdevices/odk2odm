@@ -1,4 +1,3 @@
-from odk2odm import attachments
 from odk2odm import csv_from_odata
 from odk2odm import exif_locate
 from odk2odm import extract_location_from_exif

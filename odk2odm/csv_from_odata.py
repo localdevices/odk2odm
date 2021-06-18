@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import os
-import fetch
+from odk2odm import fetch
 import argparse
 import csv
 import json

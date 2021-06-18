@@ -18,8 +18,8 @@ Requires the exifread library, available on pip (pip install exifread).
 Might be sensible to rewrite using PIL (or pillow) library to make it a more
 common dependency. Not urgent.
 """
-
-import sys, os
+import os
+import sys
 import csv
 import exifread
 

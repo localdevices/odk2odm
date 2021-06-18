@@ -23,7 +23,7 @@ def submissions(base_url, aut, projectId, formId):
 # Should work with ?media=false appended but doesn't. Use the odata version.
 def csv_submissions(base_url, aut, projectId, formId):
     """Fetch a CSV file of the submissions to a survey form."""
-    f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip'
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip'
     return requests.get(url, auth = aut)
 
 

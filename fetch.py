@@ -41,6 +41,7 @@ r.json()[0]['name']
 
 import sys, os
 import requests
+import json
 
 def projects(base_url, aut):
     """Fetch a list of projects on an ODK Central server."""
@@ -85,3 +86,15 @@ def attachment(base_url, aut, projectId, formId, instanceId, filename):
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
         f'{instanceId}/attachments/{filename}'
     return requests.get(url, auth = aut)
+
+def create_project(base_url, aut, project_name):
+    """Create a new project on an ODK Central server"""
+    url = f'{base_url}/v1/projects'
+    namedict = {'name': project_name}
+    postbody = json.dumps(namedict, indent = 2)
+    return requests.post(url, auth = aut, data = postbody)
+
+def delete_project(base_url, aut, project_id):
+    """Permanently delete project from an ODK Central server. Probably don't."""
+    url = f'{base_url}/v1/projects/{project_id}'
+    return requests.delete(url, auth = aut)

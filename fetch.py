@@ -90,9 +90,7 @@ def attachment(base_url, aut, projectId, formId, instanceId, filename):
 def create_project(base_url, aut, project_name):
     """Create a new project on an ODK Central server"""
     url = f'{base_url}/v1/projects'
-    namedict = {'name': project_name}
-    postbody = json.dumps(namedict, indent = 2)
-    return requests.post(url, auth = aut, data = postbody)
+    return requests.post(url, auth = aut, json = {'name': project_name})
 
 def delete_project(base_url, aut, project_id):
     """Permanently delete project from an ODK Central server. Probably don't."""

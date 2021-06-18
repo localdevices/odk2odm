@@ -1,8 +1,9 @@
 #!/usr/bin/python3
-
-import sys, os
+import os
+import sys
 from pathlib import Path
 from PIL import Image
+
 
 def checkimages(indir):
     """returns a list of image files that can be successfully opened by PIL"""
@@ -20,8 +21,8 @@ def checkimages(indir):
         except Exception as e:
             print(e)
             badfiles.append(f)
+    return goodfiles, badfiles
 
-    return(goodfiles, badfiles)
 
 def write_file_lists(indir):
     """Write two text files with the good and bad image files in the parent

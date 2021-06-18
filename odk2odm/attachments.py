@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
-import sys, os
+import os
 import fetch
 import argparse
 import threading
-import csv
+
 
 def threaded_download():
     """Grab lots of photos using threaded concurrent download"""
-    # NOT DONE
+    # FIXME: NOT DONE
     
     threads = []
 
@@ -21,6 +21,7 @@ def threaded_download():
     for thread in threads:
         thread.join()
 
+
 def all_attachments_from_form(url, aut, project, form, outdir):
     """Downloads all available attachments from a given form"""
     submissions = fetch.submissions(url, aut, project, form)
@@ -32,10 +33,11 @@ def all_attachments_from_form(url, aut, project, form, outdir):
         for attachment in attachments.json():
             fn = attachment['name']
             attresp = fetch.attachment(url, aut, project, form,
-                                               sub_id, fn)
+                                       sub_id, fn)
             outfilepath = os.path.join(outdir, fn)
             with open(outfilepath, 'wb') as outfile:
                 outfile.write(attresp.content)
+
 
 def specified_attachments_from_form(url, aut, project, form, outdir, infile):
     """Downloads attachments specified in a text file."""
@@ -72,4 +74,3 @@ if __name__ == '__main__':
 
     all_attachments_from_form(args.base_url, (args.user, args.password),
                               args.project, args.form, args.output_directory)
-                              

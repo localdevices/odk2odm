@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
-import sys, os
+import os
 import fetch
 import argparse
 import csv
 import json
+
 
 def csv_from_odata(url, aut, project, form, outdir, gc):
     """Write a CSV to a specified directory using odata for a specified form"""
@@ -28,6 +29,7 @@ def csv_from_odata(url, aut, project, form, outdir, gc):
             gc_contents = row[geocol - 1]
             geolist = jsonpoint_to_list(gc_contents)
             w.writerow(row[: geocol] + geolist + row[geocol :])
+
 
 def jsonpoint_to_list(po):
     """ODK Central returnt point in what is almost a JSON string, 
@@ -55,7 +57,8 @@ def jsonpoint_to_list(po):
         except Exception as f:
             #print(f)
             return ['', '', '', '']
-        
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('-url', '--base_url',

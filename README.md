@@ -2,6 +2,8 @@
 
 A utility to manage data from Open Data Kit's [ODK Central aggregation server](https://docs.getodk.org/central-intro/), particularly for use with [OpenDroneMap](opendronemap.org) (ODM).
 
+It uses the [ODK Central API](https://odkcentral.docs.apiary.io).
+
 ODK Central provides a Web interface to manage forms, submissions, and media (photos etc). However, when faced with hundreds of GB of media, the Web interface can be tricky. Specifically, if a lot of media is submittted to a single form, ODK Central's Web interface only provides methods to download a single file at a time, or _the entire set_ as a zipfile&mdash;the former is time-consuming, and the latter is prone to failed downloads.
 
 To create a [3DStreetView](3dstreetview.org) digital twin, users routinely gather thousands of photographs per day. If multiple users are submitting to the same form, it almost immediately becomes difficult to access the media on the server.

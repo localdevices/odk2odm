@@ -58,6 +58,16 @@ def submissions(base_url, aut, projectId, formId):
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions'
     return requests.get(url, auth = aut)
 
+def users(base_url, aut):
+    """Fetch a list of users."""
+    url = f'{base_url}/v1/users'
+    return requests.get(url, auth = aut)
+
+def app_users(base_url, aut, projectId):
+    """Fetch a list of app-users."""
+    url = f'{base_url}/v1/projects/{projectId}/app-users'
+    return requests.get(url, auth = aut)
+
 
 # Should work with ?media=false appended but doesn't.
 # Probably a bug in ODK Central. Use the odata version; it works.
@@ -91,11 +101,17 @@ def attachment(base_url, aut, projectId, formId, instanceId, filename):
         f'{instanceId}/attachments/{filename}'
     return requests.get(url, auth = aut)
 
+# POST
 
 def create_project(base_url, aut, project_name):
     """Create a new project on an ODK Central server"""
     url = f'{base_url}/v1/projects'
     return requests.post(url, auth = aut, json = {'name': project_name})
+
+def create_app_user(base_url, aut, projectId, app_user_name = 'Surveyor'):
+    """Create a new project on an ODK Central server"""
+    url = f'{base_url}/v1/projects/{projectId}/app-users'
+    return requests.post(url, auth = aut, json = {'displayName': app_user_name})
 
 
 def delete_project(base_url, aut, project_id):

@@ -42,11 +42,23 @@ r.json()[0]['name']
 import sys, os
 import requests
 import json
+import zlib
+from openpyxl import load_workbook
+import qrcode
+
+import urllib
 
 def projects(base_url, aut):
     """Fetch a list of projects on an ODK Central server."""
     url = f'{base_url}/v1/projects'
     return requests.get(url, auth = aut)
+
+def project_id(base_url, aut, projectName):
+    """Fetch the id of a project based on the name on an ODK Central server."""
+    url = f'{base_url}/v1/projects'
+    projects = requests.get(url, auth = aut).json()
+    projectId = [p for p in projects if p['name']== projectName][0]['id']
+    return projectId
 
 def forms(base_url, aut, projectId):
     """Fetch a list of forms in a project."""
@@ -67,7 +79,6 @@ def app_users(base_url, aut, projectId):
     """Fetch a list of app-users."""
     url = f'{base_url}/v1/projects/{projectId}/app-users'
     return requests.get(url, auth = aut)
-
 
 # Should work with ?media=false appended but doesn't.
 # Probably a bug in ODK Central. Use the odata version; it works.
@@ -101,7 +112,7 @@ def attachment(base_url, aut, projectId, formId, instanceId, filename):
         f'{instanceId}/attachments/{filename}'
     return requests.get(url, auth = aut)
 
-# POST
+# POST 
 
 def create_project(base_url, aut, project_name):
     """Create a new project on an ODK Central server"""
@@ -114,10 +125,85 @@ def create_app_user(base_url, aut, projectId, app_user_name = 'Surveyor'):
     return requests.post(url, auth = aut, json = {'displayName': app_user_name})
 
 
+#Not sure if this is needed
+def create_public_link(base_url, aut, projectId, formId, linkName):
+    """Give access to anybody to submit a form"""
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/public-links'
+    return requests.post(url, auth = aut, json = {'displayName': linkName}) 
+
+
+def give_access_app_users(base_url, aut, projectId):
+    """Give all the app-users in the project access to all the forms in that project"""
+    url = f'{base_url}/v1/projects/{projectId}/forms'
+    forms = requests.get(url, auth = aut).json()
+
+    for form in forms:
+        formId = form['xmlFormId']
+        url = f'{base_url}/v1/projects/{projectId}/app-users'
+        app_users = requests.get(url, auth = aut).json()
+        for user in app_users:
+            actorId = user['id']        
+            roleId = 2
+            url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}' 
+            requests.post(url, auth = aut)  
+
+
 def delete_project(base_url, aut, project_id):
     """Permanently delete project from an ODK Central server. Probably don't."""
     url = f'{base_url}/v1/projects/{project_id}'
     return requests.delete(url, auth = aut)
 
+###### Editing
+def create_form(base_url, aut, projectId, path2Form):
+    """Create a new form on an ODK Central server"""
+    base_name = os.path.basename(path2Form)
+    file_name = os.path.splitext(base_name)[0]
+    form_file = load_workbook(path2Form)
+    #sheet = form_file.active
+
+    headers = {
+    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    f'X-XlsForm-FormId-Fallback': file_name
+    }
+    url = f'{base_url}/v1/projects/{projectId}/forms?ignoreWarnings=true&publish=true'
+    values = form_file
+
+    # Here trying with urllib
+    request = urllib.request.Request(url, data=values, headers=headers)
+    response_body = urllib.request.urlopen(request).read()
+    print(response_body)
+
+    # From the requests, gives the same error
+    return requests.post(url, auth = aut, data = form_file, headers = headers)
+
+def compress_qr_data(base_url, aut, qr_data):
+    false = False
+    true = True
+    qr_data_bytes = json.dumps(qr_data).encode('utf-8')     
+    qr_data_comp = zlib.compress(qr_data_bytes, level=9)
+    img = qrcode.make(qr_data_bytes)
+    img.save('MyQRCode1.png') 
+    return qr_data_bytes
+
+# Test QR settings data
+false = False
+true = True
+
+qr_data = {
+  "general": {
+    "protocol": "google_sheets",
+    "constraint_behavior": "on_finalize"
+  },
+  "admin": {
+    "edit_saved": false
+  }
+}
+
+###### editing until
+
 if __name__ == '__main__':
     pass
+
+
+
+

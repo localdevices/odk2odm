@@ -36,7 +36,7 @@ def make_geo_txt(infile, colrange, lonc,
     loncol = col2num(lonc)
     elecol = col2num(elec)
     acccol = col2num(accc)
-    sites = list(csv.reader(open(infile), delimiter=';'))[1:]
+    sites = list(csv.reader(open(infile), delimiter=','))[1:]
     cols = parse_range(colrange)
     outfile = os.path.join(os.path.dirname(infile), 'geo.txt')
     with (open(outfile, 'w')) as csvfile:

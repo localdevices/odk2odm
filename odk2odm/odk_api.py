@@ -43,7 +43,6 @@ import sys, os
 import requests
 import json
 import zlib
-from openpyxl import load_workbook
 import qrcode
 
 import urllib
@@ -158,7 +157,7 @@ def create_form(base_url, aut, projectId, path2Form):
     """Create a new form on an ODK Central server"""
     base_name = os.path.basename(path2Form)
     file_name = os.path.splitext(base_name)[0]
-    form_file = load_workbook(path2Form)
+    form_file = open(path2Form, 'rb')
     #sheet = form_file.active
 
     headers = {
@@ -167,11 +166,6 @@ def create_form(base_url, aut, projectId, path2Form):
     }
     url = f'{base_url}/v1/projects/{projectId}/forms?ignoreWarnings=true&publish=true'
     values = form_file
-
-    # Here trying with urllib
-    request = urllib.request.Request(url, data=values, headers=headers)
-    response_body = urllib.request.urlopen(request).read()
-    print(response_body)
 
     # From the requests, gives the same error
     return requests.post(url, auth = aut, data = form_file, headers = headers)
@@ -203,7 +197,3 @@ qr_data = {
 
 if __name__ == '__main__':
     pass
-
-
-
-

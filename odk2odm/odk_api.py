@@ -44,6 +44,7 @@ import requests
 import json
 import zlib
 import qrcode
+import codecs
 
 import urllib
 
@@ -152,7 +153,7 @@ def delete_project(base_url, aut, project_id):
     url = f'{base_url}/v1/projects/{project_id}'
     return requests.delete(url, auth = aut)
 
-###### Editing
+
 def create_form(base_url, aut, projectId, path2Form):
     """Create a new form on an ODK Central server"""
     base_name = os.path.basename(path2Form)
@@ -173,27 +174,39 @@ def create_form(base_url, aut, projectId, path2Form):
 def compress_qr_data(base_url, aut, qr_data):
     false = False
     true = True
-    qr_data_bytes = json.dumps(qr_data).encode('utf-8')     
-    qr_data_comp = zlib.compress(qr_data_bytes, level=9)
-    img = qrcode.make(qr_data_bytes)
+
+    qr_data_bytes = json.dumps(qr_data).encode('utf-8') 
+    qr_data_comp = zlib.compress(qr_data_bytes)
+    qr_data_comp_utf = codecs.encode(qr_data_comp, 'base64_codec') 
+    qr_data_comp_str = qr_data_comp_utf.decode('utf-8').replace('\n', '')
+    img = qrcode.make(qr_data_comp_str)
     img.save('MyQRCode1.png') 
-    return qr_data_bytes
+    return qr_data_comp_str
+
 
 # Test QR settings data
 false = False
 true = True
-
+# See here to see all the possible settings: https://docs.getodk.org/collect-import-export/?highlight=configur
 qr_data = {
   "general": {
-    "protocol": "google_sheets",
+    "protocol": "odk_default",
     "constraint_behavior": "on_finalize"
   },
   "admin": {
     "edit_saved": false
   }
 }
+# A QR code from one app user from the website
+qr_data = {
+    "general":{
+        "server_url":"https://3dstreetview.org/v1/key/bm$OwmsI$lYPLjXJyKbSPKmmydD5JuNJH2mwi8$KcUaFVE9EdYiq3mhX4BLDynwH/projects/15",
+        "form_update_mode":"match_exactly",
+        "autosend":"wifi_and_cellular"},
+    "admin":{}
+    }
 
-###### editing until
 
 if __name__ == '__main__':
     pass
+

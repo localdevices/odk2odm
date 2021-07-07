@@ -113,23 +113,19 @@ def attachment(base_url, aut, projectId, formId, instanceId, filename):
     return requests.get(url, auth = aut)
 
 # POST 
-
 def create_project(base_url, aut, project_name):
     """Create a new project on an ODK Central server"""
     url = f'{base_url}/v1/projects'
     return requests.post(url, auth = aut, json = {'name': project_name})
 
 def create_app_user(base_url, aut, projectId, app_user_name = 'Surveyor'):
-    """Create a new project on an ODK Central server"""
+    """
+    Create a new project on an ODK Central server
+
+    Atm. you can create multiple app users with the same name, should this be possible, or give an error? 
+    """
     url = f'{base_url}/v1/projects/{projectId}/app-users'
     return requests.post(url, auth = aut, json = {'displayName': app_user_name})
-
-
-#Not sure if this is needed
-def create_public_link(base_url, aut, projectId, formId, linkName):
-    """Give access to anybody to submit a form"""
-    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/public-links'
-    return requests.post(url, auth = aut, json = {'displayName': linkName}) 
 
 
 def give_access_app_users(base_url, aut, projectId):
@@ -145,8 +141,8 @@ def give_access_app_users(base_url, aut, projectId):
             actorId = user['id']        
             roleId = 2
             url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}' 
-            requests.post(url, auth = aut)  
-
+            requests.post(url, auth = aut)
+    return 200
 
 def delete_project(base_url, aut, project_id):
     """Permanently delete project from an ODK Central server. Probably don't."""
@@ -171,36 +167,25 @@ def create_form(base_url, aut, projectId, path2Form):
     # From the requests, gives the same error
     return requests.post(url, auth = aut, data = form_file, headers = headers)
 
-def compress_qr_data(base_url, aut, qr_data):
-    """generate qr code data"""
-    false = False
-    true = True
+general={
+        "form_update_mode":"match_exactly",
+        "autosend":"wifi_and_cellular"
+        }
 
-    qr_data_bytes = json.dumps(qr_data).encode('utf-8') 
-    qr_data_comp = zlib.compress(qr_data_bytes)
-    qr_data_comp_utf = codecs.encode(qr_data_comp, 'base64_codec') 
-    qr_data_comp_str = qr_data_comp_utf.decode('utf-8').replace('\n', '')
-    img = qrcode.make(qr_data_comp_str)
-    img.save('MyQRCode1.png') 
-    return qr_data_comp_str
-
-
-def generate_qr_data_list(base_url, aut, projectId):
+def generate_qr_data_dict(base_url, aut, projectId, admin = {}, general = general):
     url = f'{base_url}/v1/projects/{projectId}/app-users'
     app_users = requests.get(url, auth = aut).json()
-    qr_data_list = []
+    qr_data_dict = {}
     false = False
     true = True
     for app_user in app_users:
-        qr_data = {
-        "general":{
-            "server_url":"",
-            "form_update_mode":"match_exactly",
-            "autosend":"wifi_and_cellular"},
-        "admin":{}
-        }
         token = app_user['token']
+        app_user_id = app_user['id']
         url = f'{base_url}/v1/key/{token}/projects/{projectId}'
+        qr_data = {
+            "general":general,
+            "admin":admin
+        }
         qr_data['general']['server_url'] = url
         qr_data_bytes = json.dumps(qr_data).encode('utf-8') 
         qr_data_comp = zlib.compress(qr_data_bytes)
@@ -208,33 +193,31 @@ def generate_qr_data_list(base_url, aut, projectId):
         qr_data_comp_str = qr_data_comp_utf.decode('utf-8').replace('\n', '')
         img = qrcode.make(qr_data_comp_str)
         img.save('MyQRCode1.png') 
-        qr_data_list.append(qr_data_comp_str)
+        qr_data_dict[app_user_id] = qr_data_comp_str
 
-    return qr_data_list
-
+    return (json.dumps(qr_data_dict), 200)
 
 
 # Test QR settings data
-false = False
-true = True
 # See here to see all the possible settings: https://docs.getodk.org/collect-import-export/?highlight=configur
-qr_data = {
-  "general": {
-    "protocol": "odk_default",
-    "constraint_behavior": "on_finalize"
-  },
-  "admin": {
-    "edit_saved": false
-  }
-}
-# A QR code from one app user from the website
-qr_data = {
-    "general":{
-        "server_url":"https://3dstreetview.org/v1/key/bm$OwmsI$lYPLjXJyKbSPKmmydD5JuNJH2mwi8$KcUaFVE9EdYiq3mhX4BLDynwH/projects/15",
-        "form_update_mode":"match_exactly",
-        "autosend":"wifi_and_cellular"},
-    "admin":{}
-    }
+
+# qr_data = {
+#   "general": {
+#     "protocol": "odk_default",
+#     "constraint_behavior": "on_finalize"
+#   },
+#   "admin": {
+#     "edit_saved": false
+#   }
+# }
+# # A QR code from one app user from the website
+# qr_data = {
+#     "general":{
+#         "server_url":"https://3dstreetview.org/v1/key/bm$OwmsI$lYPLjXJyKbSPKmmydD5JuNJH2mwi8$KcUaFVE9EdYiq3mhX4BLDynwH/projects/15",
+#         "form_update_mode":"match_exactly",
+#         "autosend":"wifi_and_cellular"},
+#     "admin":{}
+#     }
 
 
 if __name__ == '__main__':

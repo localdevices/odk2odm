@@ -26,6 +26,8 @@ setup(
         "requests",
         "exifread",
         "Pillow",
+        "openpyxl",
+        "qrcode",
     ],
     extras_require={
         "dev": ["pytest", "pytest-cov"],

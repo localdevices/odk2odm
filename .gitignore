@@ -28,3 +28,6 @@ odk2odm_venv/
 
 # test scripts
 test
+
+# Images
+*.png

@@ -7,16 +7,25 @@ Takes an input CSV file of submissions with multiple photos per survey
 point as a positional argument. 
 
 Takes four flag arguments specifying the columns in the input file for lat, 
-lon, elevation, and accuracy: -lat, -lon, -ele, and -acc.
+lon, elevation, and accuracy: -lat, -lon, -ele, and -acc. All are required,
+which shouldn't be a problem if the input file comes from ODK, which uses the 
+JavaRosa geopoint standard that includes those four numbers.
 
-Takes a flag argument, -r or --range, which specifies all of the columns where 
-photos are found. For example, "15-26,28-39,41-52" will capture three sets of
-12 consecutive columns. One-based column numbering to be consistent with a 
-spreadsheet, which is the most likely place users will be counting columns.  
+Takes a required flag argument, -r or --range, which specifies all of the 
+columns where photos are found. For example, "15-26,28-39,41-52" will capture 
+three sets of 12 consecutive columns. One-based column numbering to be 
+consistent with a spreadsheet, which is the most likely place users will be 
+counting columns. Range can also be in the form of spreadsheet-style lettered 
+column names, for example "O-Z,AA-AL,AM-AX" would capture the same three sets 
+of 12 columns as in the numbered example above.
 
-Takes and optional flag argument, -proj, with a Coordinate Reference System
+Takes an optional flag argument, -proj, with a Coordinate Reference System
 string (which can be in whatever format ODM will accept; this script doesn't 
 care).
+
+Takes an optional flag argument, -d or --delimiter, which specifies the 
+delimiting character in the input dataset exported from ODK. The default is 
+comma, which is the default delimiter in files exported from ODK Central.
 
 """
 import os
@@ -26,8 +35,8 @@ import argparse
 import string
 
 
-def make_geo_txt(infile, colrange, lonc,
-                 latc, elec, accc, proj):
+def make_geo_txt(infile, colrange, lonc, latc,
+                 elec, accc, proj, dlm):
     """
     make a list of photo locations so that ODM
     can process them efficiently.
@@ -36,7 +45,7 @@ def make_geo_txt(infile, colrange, lonc,
     loncol = col2num(lonc)
     elecol = col2num(elec)
     acccol = col2num(accc)
-    sites = list(csv.reader(open(infile), delimiter=';'))[1:]
+    sites = list(csv.reader(open(infile), delimiter=dlm))[1:]
     cols = parse_range(colrange)
     outfile = os.path.join(os.path.dirname(infile), 'geo.txt')
     with (open(outfile, 'w')) as csvfile:
@@ -104,21 +113,24 @@ if __name__ == "__main__":
                            '"3-5,7,9-11" or "c-e,g,i-k" '
                            '(spreadsheet format). Use 1-based '
                            'column numbers'))
-    p.add_argument('-lat', '--latitude',
+    p.add_argument('-lat', '--latitude', required=True,
                    help=('Latitude column. Can be 1-based '
                            'column number or spreadsheet '
                            'column letters'))
-    p.add_argument('-lon', '--longitude',
+    p.add_argument('-lon', '--longitude', required=True,
                    help=('longitude column '
                            'can be 1-based column number or '
                            'spreadsheet column letters'))
-    p.add_argument('-ele', '--elevation',
+    p.add_argument('-ele', '--elevation', required=True,
                    help='GPS elevation column')
-    p.add_argument('-acc', '--accuracy',
+    p.add_argument('-acc', '--accuracy', required=True,
                    help='Estimated GPS accuracy column')
     p.add_argument('-proj', '--projection',
                    help='Coordinate Reference System',
                    default='EPSG:4326')
+    p.add_argument('-d', '--delimiter',
+                   help='Delimiter for input text file',
+                   default=',')
     args = p.parse_args()
 
     make_geo_txt(
@@ -128,5 +140,6 @@ if __name__ == "__main__":
         args.latitude,
         args.elevation,
         args.accuracy,
-        args.projection
+        args.projection,
+        args.delimiter
     )

@@ -172,6 +172,7 @@ def create_form(base_url, aut, projectId, path2Form):
     return requests.post(url, auth = aut, data = form_file, headers = headers)
 
 def compress_qr_data(base_url, aut, qr_data):
+    """generate qr code data"""
     false = False
     true = True
 
@@ -182,6 +183,35 @@ def compress_qr_data(base_url, aut, qr_data):
     img = qrcode.make(qr_data_comp_str)
     img.save('MyQRCode1.png') 
     return qr_data_comp_str
+
+
+def generate_qr_data_list(base_url, aut, projectId):
+    url = f'{base_url}/v1/projects/{projectId}/app-users'
+    app_users = requests.get(url, auth = aut).json()
+    qr_data_list = []
+    false = False
+    true = True
+    for app_user in app_users:
+        qr_data = {
+        "general":{
+            "server_url":"",
+            "form_update_mode":"match_exactly",
+            "autosend":"wifi_and_cellular"},
+        "admin":{}
+        }
+        token = app_user['token']
+        url = f'{base_url}/v1/key/{token}/projects/{projectId}'
+        qr_data['general']['server_url'] = url
+        qr_data_bytes = json.dumps(qr_data).encode('utf-8') 
+        qr_data_comp = zlib.compress(qr_data_bytes)
+        qr_data_comp_utf = codecs.encode(qr_data_comp, 'base64_codec') 
+        qr_data_comp_str = qr_data_comp_utf.decode('utf-8').replace('\n', '')
+        img = qrcode.make(qr_data_comp_str)
+        img.save('MyQRCode1.png') 
+        qr_data_list.append(qr_data_comp_str)
+
+    return qr_data_list
+
 
 
 # Test QR settings data

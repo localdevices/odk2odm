@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import os
-from odk2odm import fetch
+from odk2odm import odk_api
 import argparse
 import csv
 import json
@@ -9,7 +9,7 @@ import json
 
 def csv_from_odata(url, aut, project, form, outdir, gc):
     """Write a CSV to a specified directory using odata for a specified form"""
-    response = fetch.odata_submissions(url, aut, project, form)
+    response = odk_api.odata_submissions(url, aut, project, form)
     submissions = response.json()['value']
     # Making the unsafe assumption that all rows have the same headers
     # and simply grabbing the headers from the first row

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import os
-from odk2odm import odk_api
+from odk2odm import odk_requests
 import argparse
 import threading
 
@@ -23,15 +23,15 @@ def threaded_download():
 
 def all_attachments_from_form(url, aut, project, form, outdir):
     """Downloads all available attachments from a given form"""
-    submissions = odk_api.submissions(url, aut, project, form)
+    submissions = odk_requests.submissions(url, aut, project, form)
 
     for submission in submissions.json():
         sub_id = submission['instanceId']
         print(sub_id)
-        attachments = odk_api.attachment_list(url, aut, project, form, sub_id)
+        attachments = odk_requests.attachment_list(url, aut, project, form, sub_id)
         for attachment in attachments.json():
             fn = attachment['name']
-            attresp = odk_api.attachment(url, aut, project, form,
+            attresp = odk_requests.attachment(url, aut, project, form,
                                        sub_id, fn)
             outfilepath = os.path.join(outdir, fn)
             with open(outfilepath, 'wb') as outfile:

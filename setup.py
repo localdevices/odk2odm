@@ -26,6 +26,7 @@ setup(
         "requests",
         "exifread",
         "Pillow",
+        "qrcode",
     ],
     extras_require={
         "dev": ["pytest", "pytest-cov"],

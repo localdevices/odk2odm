@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import os
-from odk2odm import odk_api
+from odk2odm import odk_requests
 import argparse
 import csv
 import json

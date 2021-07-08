@@ -19,7 +19,7 @@ else
 fi
 
 echo creating and activating virtual environment
-pip3 install wheel
+#pip3 install wheel
 pip3 install virtualenv
 source odk2odm_venv/bin/activate
 pip3 install wheel

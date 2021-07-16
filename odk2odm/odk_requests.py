@@ -1,5 +1,10 @@
 #!/usr/bin/python3
-"""Utilities for interacting with ODK Central API
+"""
+
+TODO: move this documentation to README.md
+TODO: move functions that logically combine several requests to a new module
+
+Utilities for interacting with ODK Central API
 
 These are functions that return replies from an ODK Central server. https://docs.getodk.org/central-intro/
 
@@ -45,47 +50,67 @@ import json
 import zlib
 import qrcode
 import codecs
-
 import urllib
+
+general = {
+    "form_update_mode": "match_exactly",
+    "autosend": "wifi_and_cellular",
+}
+
 
 def projects(base_url, aut):
     """Fetch a list of projects on an ODK Central server."""
     url = f'{base_url}/v1/projects'
-    return requests.get(url, auth = aut)
+    return requests.get(url, auth=aut)
+
+
+def project(base_url, aut, projectId):
+    """Fetch details of a specific project on an ODK Central server"""
+    url = f'{base_url}/v1/projects/{projectId}'
+    return requests.get(url, auth=aut)
+    
 
 def project_id(base_url, aut, projectName):
     """Fetch the id of a project based on the name on an ODK Central server."""
     url = f'{base_url}/v1/projects'
-    projects = requests.get(url, auth = aut).json()
+    projects = requests.get(url, auth=aut).json()
     projectId = [p for p in projects if p['name']== projectName][0]['id']
     return projectId
 
 def forms(base_url, aut, projectId):
     """Fetch a list of forms in a project."""
     url = f'{base_url}/v1/projects/{projectId}/forms'
-    return requests.get(url, auth = aut)
+    return requests.get(url, auth=aut)
+
+
+def form(base_url, aut, projectId, formId):
+    """Fetch a list of forms in a project."""
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}'
+    return requests.get(url, auth=aut)
+
 
 def submissions(base_url, aut, projectId, formId):
     """Fetch a list of submission instances for a given form."""
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions'
-    return requests.get(url, auth = aut)
+    return requests.get(url, auth=aut)
 
 def users(base_url, aut):
     """Fetch a list of users."""
     url = f'{base_url}/v1/users'
-    return requests.get(url, auth = aut)
+    return requests.get(url, auth=aut)
 
 def app_users(base_url, aut, projectId):
     """Fetch a list of app-users."""
     url = f'{base_url}/v1/projects/{projectId}/app-users'
-    return requests.get(url, auth = aut)
+    return requests.get(url, auth=aut)
+
 
 # Should work with ?media=false appended but doesn't.
 # Probably a bug in ODK Central. Use the odata version; it works.
 def csv_submissions(base_url, aut, projectId, formId):
     """Fetch a CSV file of the submissions to a survey form."""
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions.csv.zip'
-    return requests.get(url, auth = aut)
+    return requests.get(url, auth=aut)
 
 
 def odata_submissions(base_url, aut, projectId, formId):
@@ -95,7 +120,7 @@ def odata_submissions(base_url, aut, projectId, formId):
     each dict is a single submission with the form question names as keys.
     """    
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}.svc/Submissions'
-    submissions = requests.get(url, auth = aut)
+    submissions = requests.get(url, auth=aut)
     return submissions
 
 
@@ -103,78 +128,94 @@ def attachment_list(base_url, aut, projectId, formId, instanceId):
     """Fetch an individual media file attachment."""
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
         f'{instanceId}/attachments'
-    return requests.get(url, auth = aut)
+    return requests.get(url, auth=aut)
 
 
 def attachment(base_url, aut, projectId, formId, instanceId, filename):
     """Fetch a specific attachment by filename from a submission to a form."""
     url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/submissions/'\
         f'{instanceId}/attachments/{filename}'
-    return requests.get(url, auth = aut)
+    return requests.get(url, auth=aut)
 
 # POST 
 def create_project(base_url, aut, project_name):
     """Create a new project on an ODK Central server"""
     url = f'{base_url}/v1/projects'
-    return requests.post(url, auth = aut, json = {'name': project_name})
+    return requests.post(url, auth=aut, json={'name': project_name})
 
-def create_app_user(base_url, aut, projectId, app_user_name = 'Surveyor'):
+def create_app_user(base_url, aut, projectId, app_user_name='Surveyor'):
     """
     Create a new project on an ODK Central server
 
     Atm. you can create multiple app users with the same name, should this be possible, or give an error? 
     """
     url = f'{base_url}/v1/projects/{projectId}/app-users'
-    return requests.post(url, auth = aut, json = {'displayName': app_user_name})
+    return requests.post(url, auth=aut, json={'displayName': app_user_name})
 
 
-def give_access_app_users(base_url, aut, projectId):
+def update_role_app_user(base_url, aut, projectId, formId, actorId, roleId=2):
+    """Give specified app-user specified role for given project"""
+    url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
+    return requests.post(url, auth=aut)
+    
+
+def give_access_app_users(base_url, aut, projectId, roleId=2):
     """Give all the app-users in the project access to all the forms in that project"""
     url = f'{base_url}/v1/projects/{projectId}/forms'
-    forms = requests.get(url, auth = aut).json()
+    forms = requests.get(url, auth=aut).json()
 
     for form in forms:
         formId = form['xmlFormId']
         url = f'{base_url}/v1/projects/{projectId}/app-users'
-        app_users = requests.get(url, auth = aut).json()
+        app_users = requests.get(url, auth=aut).json()
         for user in app_users:
-            actorId = user['id']        
-            roleId = 2
-            url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}' 
-            requests.post(url, auth = aut)
-    return 200
+            kwargs = {
+                "formId": formId,
+                "actorId": user['id'],
+            }
+            update_role_app_user(base_url, aut, projectId, roleId=roleId, **kwargs)
+            #url = f'{base_url}/v1/projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}' 
+            #requests.post(url, auth = aut)
+    return "Role successfully changed", 200
 
 def delete_project(base_url, aut, project_id):
     """Permanently delete project from an ODK Central server. Probably don't."""
     url = f'{base_url}/v1/projects/{project_id}'
-    return requests.delete(url, auth = aut)
+    return requests.delete(url, auth=aut)
 
 
-def create_form(base_url, aut, projectId, path2Form):
+def create_form(base_url, aut, projectId, name, data):
     """Create a new form on an ODK Central server"""
-    base_name = os.path.basename(path2Form)
-    file_name = os.path.splitext(base_name)[0]
-    form_file = open(path2Form, 'rb')
+    # base_name = os.path.basename(path2Form)
+    # file_name = os.path.splitext(base_name)[0]
+    # form_file = open(path2Form, 'rb')
     #sheet = form_file.active
-
     headers = {
     'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    f'X-XlsForm-FormId-Fallback': file_name
+    f'X-XlsForm-FormId-Fallback': name
     }
     url = f'{base_url}/v1/projects/{projectId}/forms?ignoreWarnings=true&publish=true'
-    values = form_file
-
     # From the requests, gives the same error
-    return requests.post(url, auth = aut, data = form_file, headers = headers)
+    return requests.post(url, auth=aut, data=data, headers=headers)
 
-general={
-        "form_update_mode":"match_exactly",
-        "autosend":"wifi_and_cellular"
-        }
+def get_qr_code(base_url, aut, projectId, token, admin={}, general=general):
+    url = f'{base_url}/v1/key/{token}/projects/{projectId}'
+    qr_data = {
+        "general": general,
+        "admin": admin,
+    }
+    qr_data['general']['server_url'] = url
+    qr_data_bytes = json.dumps(qr_data).encode('utf-8') 
+    qr_data_comp = zlib.compress(qr_data_bytes)
+    qr_data_comp_utf = codecs.encode(qr_data_comp, 'base64_codec') 
+    qr_data_comp_str = qr_data_comp_utf.decode('utf-8').replace('\n', '')
+    img = qrcode.make(qr_data_comp_str)
+    img.save("check_this.png")
+    return img, 200
 
-def generate_qr_data_dict(base_url, aut, projectId, admin = {}, general = general):
+def generate_qr_data_dict(base_url, aut, projectId, admin={}, general=general):
     url = f'{base_url}/v1/projects/{projectId}/app-users'
-    app_users = requests.get(url, auth = aut).json()
+    app_users = requests.get(url, auth=aut).json()
     qr_data_dict = {}
     false = False
     true = True
@@ -183,8 +224,8 @@ def generate_qr_data_dict(base_url, aut, projectId, admin = {}, general = genera
         app_user_id = app_user['id']
         url = f'{base_url}/v1/key/{token}/projects/{projectId}'
         qr_data = {
-            "general":general,
-            "admin":admin
+            "general": general,
+            "admin": admin,
         }
         qr_data['general']['server_url'] = url
         qr_data_bytes = json.dumps(qr_data).encode('utf-8') 

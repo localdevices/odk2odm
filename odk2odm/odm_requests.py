@@ -21,6 +21,21 @@ def get_token_auth(base_url, username, password):
     return res
 
 
+def get_options(base_url, token):
+    """
+    Get list of processing options for NodeODM
+    :param base_url: str - base url of WebODM server
+    :param token: str - 24-hr token (see token_auth)
+    :return: http response
+
+    """
+    url = f"{base_url}/api/processingnodes/options/"
+    res = requests.get(
+        url,
+        headers={'Authorization': 'JWT {}'.format(token)},
+    )
+    return res
+
 def get_projects(base_url, token):
     """
     Get list of projects belonging to server / user
@@ -88,6 +103,23 @@ def get_task(base_url, token, project_id, task_id):
     )
     return res
 
+def get_thumbnail(base_url, token, project_id, task_id, filename):
+    url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/images/thumbnail/{filename}"
+    res = requests.get(
+        url,
+        headers={'Authorization': 'JWT {}'.format(token)},
+    )
+    return res
+
+def get_image(base_url, token, project_id, task_id, filename):
+    url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/images/download/{filename}"
+    res = requests.get(
+        url,
+        headers={'Authorization': 'JWT {}'.format(token)},
+    )
+    return res
+
+
 def post_task(base_url, token, project_id, data={}, files=[]):
     """
     Post a new task in a project (See https://docs.webodm.org/#create-a-task)
@@ -153,6 +185,45 @@ def post_commit(base_url, token, project_id, task_id):
         headers=headers,
     )
     return res
+
+
+def post_restart(base_url, token, project_id, task_id):
+    """
+    Post a restart for an existing task. Undocumented in https://docs.webodm.org/
+    :param base_url: str - base url of WebODM server
+    :param token: str - 24-hr token (see token_auth)
+    :param project_id: int - id of project
+    :param task_id: str (uuid) - the uuid belonging to the task to retrieve
+    :return: http response
+
+    """
+    url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/restart/"
+    headers = {'Authorization': 'JWT {}'.format(token)}
+    res = requests.post(
+        url,
+        headers=headers,
+    )
+    return res
+
+
+def post_cancel(base_url, token, project_id, task_id):
+    """
+    Post a cancel for an existing running task
+    :param base_url: str - base url of WebODM server
+    :param token: str - 24-hr token (see token_auth)
+    :param project_id: int - id of project
+    :param task_id: str (uuid) - the uuid belonging to the task to retrieve
+    :return: http response
+
+    """
+    url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/cancel/"
+    headers = {'Authorization': 'JWT {}'.format(token)}
+    res = requests.post(
+        url,
+        headers=headers,
+    )
+    return res
+
 
 def delete_task(base_url, token, project_id, task_id):
     """

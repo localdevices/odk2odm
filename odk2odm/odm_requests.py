@@ -153,3 +153,21 @@ def post_commit(base_url, token, project_id, task_id):
         headers=headers,
     )
     return res
+
+def delete_task(base_url, token, project_id, task_id):
+    """
+    Delete an existing task in existing project
+    :param base_url: str - base url of WebODM server
+    :param token: str - 24-hr token (see token_auth)
+    :param project_id: int - id of project
+    :param task_id: str (uuid) - the uuid belonging to the task to retrieve
+    :return: http response
+POST /api/projects/{project_id}/tasks/{task_id}/remove/
+    """
+    url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/remove/"
+    headers = {'Authorization': 'JWT {}'.format(token)}
+    res = requests.post(
+        url,
+        headers=headers,
+    )
+    return res

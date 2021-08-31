@@ -135,6 +135,14 @@ def post_upload(base_url, token, project_id, task_id, fields={}):
     )
     return res
 
+def get_asset(base_url, token, project_id, task_id, asset):
+    url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/download/{asset}"
+    res = requests.get(
+        url,
+        headers={'Authorization': 'JWT {}'.format(token)},
+    )
+    return res
+
 
 def post_commit(base_url, token, project_id, task_id):
     """

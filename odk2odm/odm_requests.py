@@ -250,3 +250,20 @@ POST /api/projects/{project_id}/tasks/{task_id}/remove/
         headers=headers,
     )
     return res
+
+def delete_project(base_url, token, project_id):
+    """
+    Delete an existing project
+    :param base_url: str - base url of WebODM server
+    :param token: str - 24-hr token (see token_auth)
+    :param project_id: int - id of project
+    :return: http response
+    DELETE /api/projects/{project_id}
+    """
+    url = f"{base_url}/api/projects/{project_id}"
+    headers = {'Authorization': 'JWT {}'.format(token)}
+    res = requests.delete(
+        url,
+        headers=headers,
+    )
+    return res

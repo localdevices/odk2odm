@@ -48,7 +48,7 @@ import sys, os
 import requests
 import json
 import zlib
-import qrcode
+#import qrcode
 import codecs
 import urllib
 

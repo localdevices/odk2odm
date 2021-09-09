@@ -34,7 +34,7 @@ setup(
         "dev": ["pytest", "pytest-cov"],
         "optional": [],
     },
-    scripts=["scripts/attachments"],
+    scripts=[],
     entry_points="""
     """,
     include_package_data=True,

@@ -31,3 +31,6 @@ test
 
 # Images
 *.png
+
+# emacs
+*~

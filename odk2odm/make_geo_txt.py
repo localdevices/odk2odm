@@ -48,10 +48,12 @@ def make_geo_txt(infile, colrange, lonc, latc,
     sites = list(csv.reader(open(infile), delimiter=dlm))[1:]
     cols = parse_range(colrange)
     outfile = os.path.join(os.path.dirname(infile), 'geo.txt')
+    print(outfile)
     with (open(outfile, 'w')) as csvfile:
         w = csv.writer(csvfile, delimiter=' ')
         w.writerow([proj])
         for site in sites:
+            print(site[1])
             for col in cols:
                 try:
                     if site[col - 1]:
@@ -120,7 +122,7 @@ if __name__ == "__main__":
     p.add_argument('-lon', '--longitude', required=True,
                    help=('longitude column '
                            'can be 1-based column number or '
-                           'spreadsheet column letters'))
+                           'spreadsheet co-lumn letters'))
     p.add_argument('-ele', '--elevation', required=True,
                    help='GPS elevation column')
     p.add_argument('-acc', '--accuracy', required=True,

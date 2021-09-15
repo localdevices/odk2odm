@@ -1,3 +1,5 @@
+import json
+
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
@@ -133,6 +135,8 @@ def post_task(base_url, token, project_id, data={}, files=[]):
     """
     url = f"{base_url}/api/projects/{project_id}/tasks/"
     headers = {'Authorization': 'JWT {}'.format(token)}
+    # serialize options before passing
+    data["options"] = json.dumps(data["options"])
     res = requests.post(
         url,
         headers=headers,

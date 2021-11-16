@@ -3,6 +3,20 @@ import json
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
+ODM_TASK_DEFAULT_OPTIONS = {
+    "dtm": True,
+    "dsm": True,
+    "feature-quality": "ultra",  # Set feature extraction quality. Higher quality generates better features, but requires more memory and takes longer
+    "matcher-distance": 20,  # Good for street level photography. Will be changed when OpenSfM eventually is updated and has better defaults
+    "matcher-neighbors": 800,  # Good Necessary for street level photography. Will be changed when OpenSfM eventually is updated and has better defaults
+    "mesh-octree-depth": 14,  # Memory and CPU intensive but much nicer detail in meshes
+    "mesh-size": 400000,  # Memory intensive. Could probably be turned up louder
+    "min-num-features": 24000,  # One of the more important options: it improves matching significantly in complicated scenes.
+    "pc-geometric": True,  # Cleans the final model a bit based on visibility tests
+    "pc-quality": "ultra",  #Memory and CPU intensive but much nicer detail in point cloud
+}
+ODM_TASK_DEFAULT_OPTIONS_LIST = [{"name": k, "value": v} for k, v in ODM_TASK_DEFAULT_OPTIONS.items()]
+
 
 def get_token_auth(base_url, username, password):
     """
@@ -121,6 +135,36 @@ def get_image(base_url, token, project_id, task_id, filename):
     )
     return res
 
+def get_options(base_url, token):
+    url = f"{base_url}/api/processingnodes/options/"
+    res = requests.get(
+        url,
+        headers={'Authorization': 'JWT {}'.format(token)},
+    )
+    return res
+
+def patch_task(base_url, token, project_id, task_id, data={}, files={}):
+    """
+    Patch existing task settings in a project (See https://docs.webodm.org/#update-a-task)
+    :param base_url: str - base url of WebODM server
+    :param token: str - 24-hr token (see token_auth)
+    :param project_id: int - id of project
+    :param data: dict - contains details of task such as a "name", and a dict "options" to pass to NodeODM, pass "partial": True to only create an updateable task without submitting it
+    :param files: list - contains files in multipart format, see https://docs.webodm.org/#how-to-process-images for an example, leave empty when you want to provide files one by one in a partial task
+    :return: http response
+    """
+    url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/"
+    if "options" in data:
+        # serialize options before passing
+        data["options"] = json.dumps(data["options"])
+    res = requests.patch(
+        url,
+        headers={'Authorization': 'JWT {}'.format(token)},
+        data=data,
+        files=files,
+    )
+    return res
+
 
 def post_task(base_url, token, project_id, data={}, files=[]):
     """
@@ -135,6 +179,9 @@ def post_task(base_url, token, project_id, data={}, files=[]):
     """
     url = f"{base_url}/api/projects/{project_id}/tasks/"
     headers = {'Authorization': 'JWT {}'.format(token)}
+    if not("options" in data):
+        # set a good set of default options in case user does not provide these
+        data["options"] = ODM_TASK_DEFAULT_OPTIONS_LIST
     # serialize options before passing
     data["options"] = json.dumps(data["options"])
     res = requests.post(

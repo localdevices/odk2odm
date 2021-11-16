@@ -31,11 +31,14 @@ def all_attachments_from_form(url, aut, project, form, outdir):
         attachments = odk_requests.attachment_list(url, aut, project, form, sub_id)
         for attachment in attachments.json():
             fn = attachment['name']
-            attresp = odk_requests.attachment(url, aut, project, form,
-                                       sub_id, fn)
             outfilepath = os.path.join(outdir, fn)
-            with open(outfilepath, 'wb') as outfile:
-                outfile.write(attresp.content)
+            if os.path.isfile(outfilepath):
+                print(f'Apparently {fn} has already been downloaded')
+            else:
+                attresp = odk_requests.attachment(url, aut, project, form,
+                                       sub_id, fn)
+                with open(outfilepath, 'wb') as outfile:
+                    outfile.write(attresp.content)
 
 
 def specified_attachments_from_form(url, aut, project, form, outdir, infile):

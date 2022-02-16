@@ -35,6 +35,7 @@ def all_attachments_from_form(url, aut, project, form, outdir):
             if os.path.isfile(outfilepath):
                 print(f'Apparently {fn} has already been downloaded')
             else:
+                print(f'Requesting {fn} from ODK server')
                 attresp = odk_requests.attachment(url, aut, project, form,
                                        sub_id, fn)
                 with open(outfilepath, 'wb') as outfile:

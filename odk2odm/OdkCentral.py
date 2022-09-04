@@ -105,6 +105,7 @@ class OdkCentral(object):
         return result
 
     def listUsers(self):
+        """Fetch a list of users on the ODK Central server"""
         url = self.base + "users"
         result = self.session.get(url, auth=self.auth)
         self.users = result.json()
@@ -129,7 +130,9 @@ class OdkProject(OdkCentral):
     def __init__(self, data=None):
         super().__init__()
         self.forms = None
+        self.submissions = None
         self.data = None
+        self.appusers = None
         if not data:
             self.data = data
 
@@ -143,23 +146,59 @@ class OdkProject(OdkCentral):
         self.forms = result.json()
         return result
 
-    def listSubmissions(base_url, projectId, formId):
+    def listSubmissions(self, projectId, formId):
         """Fetch a list of submission instances for a given form."""
-        url = self.base + f'{projectId}/forms/{formId}/submissions'
-        return requests.get(url, auth=self.auth)
+        url = self.base + f'projects/{projectId}/forms/{formId}/submissions'
+        result = self.session.get(url, auth=self.auth)
+        self.submissions = result.json()
+        return result
     
-    def listAppUsers(self):
-        """Fetch a list of app users in a project on an ODK Central server."""
-        return self.session.get(self.base, auth=self.auth)
+    def getSubmission(self, projectId=None, formId=None, disk=False):
+        """Fetch a CSV file of the submissions without media to a survey form."""
+        url = self.base + f'projects/{projectId}/forms/{formId}/submissions.csv'
+        result = self.session.get(url, auth=self.auth)
+        if result.status_code == 200:
+            if disk:
+                filespec = "foo.csv"
+                try:
+                    file = open(filespec, "xb")
+                    file.write(result.content)
+                except FileExistsError:
+                    file = open(filespec, "wb")
+                    file.write(result.content)
+                file.close()
+            return result.content
+        else:
+            logging.error(f'Submissions for {projectId}, Form {formId}' + "doesn't exist")
+            return None
+
+    def getSubmissionMedia(self, projectId, formId):
+        """Fetch a ZIP file of the submissions with media to a survey form."""
+        url = self.base + f'projects/{projectId}/forms/{formId}/submissions.csv.zip'
+        result = self.session.get(url, auth=self.auth)
+        return result
+
+    def listAppUsers(self, projectId=None):
+        """Fetch a list of app users for a project on an ODK Central server."""
+        url = self.base + f'projects/{projectId}/app-users'
+        result = self.session.get(url, auth=self.auth)
+        self.appusers = result.json()
+        return result
 
     def dump(self):
         """Dump internal data structures, for debugging purposes only"""
         super().dump()
         print("There are %d forms in this project" % len(self.forms))
-        for data in self.forms:
-            print("\t %s(%s): %s" % (data['xmlFormId'], data['version'], data['name']))
         if self.data:
             print("Project ID: %s" % self.data['id'])
+        for data in self.forms:
+            print("\t %s(%s): %s" % (data['xmlFormId'], data['version'], data['name']))
+        print("There are %d submissions in this project" % len(self.submissions))
+        for data in self.submissions:
+            print("\t%s: %s" % (data['instanceId'], data['createdAt']))
+        print("There are %d app users in this project" % len(self.appusers))
+        for data in self.appusers:
+            print("\t%s: %s" % (data['id'], data['displayName']))
     
 
 # This following code is only for debugging purposes, since his is easier
@@ -180,7 +219,9 @@ if __name__ == '__main__':
     project.listProjects()
     project.listForms(4)
     project.listUsers()
-    # project.listSubmissions()
+    project.listAppUsers(4)
+    project.listSubmissions(4, "cemeteries")
+    project.getSubmission(4, "cemeteries")
     project.dump()
               
 

@@ -74,6 +74,10 @@ class OdkCentral(object):
         # Use a persistant connect, better for multiple requests
         self.session = requests.Session()
 
+        # These are just cached data from the queries
+        self.projects = dict()
+        self.users = None
+
     def authenticate(self, url=None, user=None, passwd=None):
         """Setup authenticate to an ODK Central server"""
         if not self.url:
@@ -86,40 +90,77 @@ class OdkCentral(object):
         self.session.headers.update({'accept': 'odkcentral'})
 
         # Connect to the server
-        return self.session.get(self.url, auth=self.auth)    
+        return self.session.get(self.url, auth=self.auth)
 
     def listProjects(self):
-        """Fetch a list of projects on an ODK Central server."""
+        """
+        Fetch a list of projects from an ODK Central server, and
+        store it as an indexed list.
+        """
         url = self.base + "projects"
-        print(url, self.auth)
-        return self.session.get(url, auth=self.auth)   
+        result = self.session.get(url, auth=self.auth)
+        projects = result.json()
+        for project in projects:
+            self.projects[project['id']] = project
+        return result
 
+    def listUsers(self):
+        url = self.base + "users"
+        result = self.session.get(url, auth=self.auth)
+        self.users = result.json()
+        return result
+        
     def dump(self):
-        """Dump interbal data structures, for debugging purposes only"""
-        print("URL: %s" % self.url)
-        print("User: %s" % self.user)
-        print("Passwd: %s" % self.passwd)
+        """Dump internal data structures, for debugging purposes only"""
+        # print("URL: %s" % self.url)
+        # print("User: %s" % self.user)
+        # print("Passwd: %s" % self.passwd)
         print("REST URL: %s" % self.base)
+        print("There are %d projects on this server" % len(self.projects))
+        for id, data in self.projects.items():
+            print("\t %s: %s" % (id, data['name']))
+        print("There are %d users on this server" % len(self.users))
+        for data in self.users:
+            print("\t %s: %s" % (data['id'], data['email']))
 
 
 class OdkProject(OdkCentral):
     """Class to manipulate a project on an ODK Central server"""
-    def __init__(self):
+    def __init__(self, data=None):
         super().__init__()
-        self.id = None
+        self.forms = None
+        self.data = None
+        if not data:
+            self.data = data
 
-    def listForms(self):
+    def getData(self, keyword):
+        return self.data[keyword]
+
+    def listForms(self, id=None):
         """Fetch a list of forms in a project on an ODK Central server."""
-        return self.session.get(self.base, auth=self.auth)
+        url = self.base + f'projects/{id}/forms'
+        result = self.session.get(url, auth=self.auth)
+        self.forms = result.json()
+        return result
 
+    def listSubmissions(base_url, projectId, formId):
+        """Fetch a list of submission instances for a given form."""
+        url = self.base + f'{projectId}/forms/{formId}/submissions'
+        return requests.get(url, auth=self.auth)
+    
     def listAppUsers(self):
         """Fetch a list of app users in a project on an ODK Central server."""
         return self.session.get(self.base, auth=self.auth)
 
-    def getSubmissions(self, projectId, formId):
-        """Fetch a list of submission instances for a given form."""
-        url = f'{self.base}/v1/projects/{projectId}/forms/{formId}/submissions'
-
+    def dump(self):
+        """Dump internal data structures, for debugging purposes only"""
+        super().dump()
+        print("There are %d forms in this project" % len(self.forms))
+        for data in self.forms:
+            print("\t %s(%s): %s" % (data['xmlFormId'], data['version'], data['name']))
+        if self.data:
+            print("Project ID: %s" % self.data['id'])
+    
 
 # This following code is only for debugging purposes, since his is easier
 # to use a debugger with instead of pytest.
@@ -134,12 +175,12 @@ if __name__ == '__main__':
     ch.setFormatter(formatter)
     root.addHandler(ch)
 
-    # odk = OdkCentral()
-    # odk.dump()
-
     project = OdkProject()
     au = project.authenticate()
-    print(au)
-    pr = project.listProjects()
-    print(pr)
+    project.listProjects()
+    project.listForms(4)
+    project.listUsers()
+    # project.listSubmissions()
+    project.dump()
+              
 

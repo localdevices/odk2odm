@@ -59,6 +59,8 @@ class OdkCentral(object):
                     self.user = tmp[1].strip ('\n')
                 if tmp[0] == "passwd":
                     self.passwd = tmp[1].strip ('\n')
+        else:
+            logging.warning("You can put authentication settings in %s" % filespec)
         # Base URL for the REST API
         self.version = "v1"
         self.base = self.url + "/" + self.version + "/"
@@ -212,17 +214,34 @@ class OdkForm(OdkCentral):
     def __init__(self, data=None):
         super().__init__()
         self.name = None
+        # Draft is for a form that isn't published yet
+        self.draft = True
+        # this is only populated if self.getDetails() is called first.
+        self.data = dict()
         self.attach = list()
         self.publish = True
-        self.media = dict()
+        self.media = list()
         self.xml = None
 
-    def getDetails(self, projectId=None, xmlFormID=None):
-        # GET
-        # https://mock.com/v1/projects/projectId/forms/xmlFormId
-        url = f'{self.base}/v1/projects/{projectId}/forms/{formId}'
+    def getName(self):
+        """Extract the name from a form on an ODK Central server"""
+        if 'name' in self.data:
+            return self.data['name']
+        else:
+            logging.warning("Execute OdkForm.getDetails() to getthis data.")
+
+    def getxmlFormId(self):
+        """Extract the xmlFormId from a form on an ODK Central server"""
+        if 'xmlFormId' in self.data:
+            return self.data['xmlFormId']
+        else:
+            logging.warning("Execute OdkForm.getDetails() to getthis data.")
+
+    def getDetails(self, projectId=None, xmlFormId=None):
+        """Get all the details for a form on an ODK Central server"""
+        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}'
         result = self.session.get(url, auth=self.auth)
-        self.media = result.json()
+        self.data = result.json()
         return result
         
     def addMedia(self, media=None, filespec=None):
@@ -230,72 +249,78 @@ class OdkForm(OdkCentral):
         # FIXME: this also needs the data
         self.media[filespec] = media
 
-    def addXMLForm(self, projectId=None, formId=None, xform=None):
+    def addXMLForm(self, projectId=None, xmlFormId=None, xform=None):
         """Add an XML file to this form"""
         self.xml = xform
 
-    def listMedia(self, projectId=None, formId=None, instanceId=None):
+    def listMedia(self, projectId=None, xmlFormId=None):
         """List all the attchements for this form"""
-        # GET
-        # https://mock.com/v1/projects/projectId/forms/xmlFormId/attachments
-        url = f'{self.base}/v1/projects/{projectId}/forms/{formId}/submissions/{instanceId}/attachments'
+        if self.draft:
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments'
+        else:
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/attachments'
         result = self.session.get(url, auth=self.auth)
         self.media = result.json()
         return result
         
-    def getMedia(self, projectId=None, formId=None, instanceId=None, filename=None):
+    def getMedia(self, projectId=None, xmlFormId=None, filename=None):
         """Fetch a specific attachment by filename from a submission to a form."""
         # GET
         # https://mock.com/v1/projects/projectId/forms/xmlFormId/attachments/filename
-        url = f'{self.base}/v1/projects/{projectId}/forms/{formId}/submissions/{instanceId}/attachments/{filename}'
+        if self.draft:
+            url = f'{self.base}/projects/{projectId}/forms/{xmlFormId}/draft/attachments/{filename}'
+        else:
+            url = f'{self.base}/projects/{projectId}/forms/{xmlFormId}/attachments/{filename}'
         result = self.session.get(url, auth=self.auth)
         self.media = result.content()
         return result
 
-    def createForm(self, projectId=None, xform=None):
+    def createForm(self, projectId=None, xmlFormId=None, xml=None):
         """Create a new form on an ODK Central server"""
         # base_name = os.path.basename(path2Form)
         # file_name = os.path.splitext(base_name)[0]
         # form_file = open(path2Form, 'rb')
         #sheet = form_file.active
-        # POST
-        # headers = {
-        #     'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        #     f'X-XlsForm-FormId-Fallback': name
-        # }
-        url = f'{self.base}/v1/projects/{projectId}/forms?ignoreWarnings=true&publish=true'
+        headers = {
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            f'X-XlsForm-FormId-Fallback': xml
+        }
+        if self.draft:
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft?ignoreWarnings=true&publish=true'
+        else:
+            url = f'{self.base}projects/{projectId}/forms?ignoreWarnings=true&publish=true'
         # From the requests, gives the same error
-        result = self.session.post(url, auth=self.auth,  data=xform, headers=headers)
+        result = self.session.post(url, auth=self.auth,  data=xml, headers=headers)
         # FIXME: should update self.forms with the new form
         return result
 
     def deleteForm(self, projectId=None, formId=None):
-        # If your goal is to prevent it from showing up on survey clients like ODK Collect, consider
+        """Delete a form from an ODK Central server"""
+        # FIXME: If your goal is to prevent it from showing up on survey clients like ODK Collect, consider
         # setting its state to closing or closed
-        # DELETE
-        url = f'{self.base}/v1/projects/{projectId}/forms/{xmlFormId}'
+        if self.draft:
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft'
+        else:
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}'
         result = self.session.delete(url, auth=self.auth)
         return result
 
-    def createDraft(self, projectId=None, xmlFormId=None):
-        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft?ignoreWarnings='
-        result = self.session.get(url, auth=self.auth, data=values, headers=headers)
-        return result        
-
-    def listDraftMedia(self, projectId=None, xmlFormId=None):
-        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments'
-        result = self.session.get(url, auth=self.auth, data=values, headers=headers)
-        return result        
-
-    def uploadMedia(self, projectId=None, xmlFormId=None):
-        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments/filename'
-        result = self.session.get(url, auth=self.auth, data=values, headers=headers)
-        return result        
-
-    def publishDraft(self):
-        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version='
+    def publish(self, projectId=None, xmlFormId=None):
+        """Publish a draft form. When creating a form that isn't a draft, it can get publised then"""
+        if self.draft:
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version='
+        else:
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version='
         result = self.session.get(url, auth=self.auth, data=values, headers=headers)
         return result
+
+    def dump(self):
+        """Dump internal data structures, for debugging purposes only"""
+        # super().dump()
+        entries = len(self.media)
+        print("Form has %d attachements" % entries)
+        for form in self.media:
+            print("Name: %s" % form['name'])
 
 # This following code is only for debugging purposes, since his is easier
 # to use a debugger with instead of pytest.
@@ -331,7 +356,7 @@ if __name__ == '__main__':
     # Form management
     form = OdkForm()
     form.authenticate()
-    form.listMedia(4, "waterpoints")
+    # x = form.listMedia(4, "waterpoints", 'uuid:fbe3ef41-6298-40c1-a694-6c9d25a8c476')
     # Make a new form
     # xml = "/home/rob/projects/HOT/odkconvert.git/XForms/cemeteries.xml"
     # form.addXMLForm(xml)
@@ -339,6 +364,8 @@ if __name__ == '__main__':
     # csv2 = "/home/rob/projects/HOT/odkconvert.git/XForms/towns.csv"
     # form.addMedia(csv1)
     # form.addMedia(csv2)
+    x = form.getDetails(4, 'cemeteries')
+    # print(x.json())
+    x = form.listMedia(4, 'cemeteries')
+    print(x.json())
     form.dump()
-              
-

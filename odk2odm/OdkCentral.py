@@ -26,11 +26,7 @@ import json
 import zlib
 import codecs
 import urllib
-
-general = {
-    "form_update_mode": "match_exactly",
-    "autosend": "wifi_and_cellular",
-}
+from datetime import tzinfo, datetime
 
 
 class OdkCentral(object):
@@ -40,7 +36,7 @@ class OdkCentral(object):
         self.user = user
         self.passwd = passwd
         # These are settings used by ODK Collect
-        self. general = {
+        self.general = {
             "form_update_mode": "match_exactly",
             "autosend": "wifi_and_cellular",
         }
@@ -67,9 +63,8 @@ class OdkCentral(object):
         self.version = "v1"
         self.base = self.url + "/" + self.version + "/"
 
+        # Authentication data
         self.auth = HTTPBasicAuth(self.user, self.passwd)
-        # self.auth = (self.user, self.passwd)
-        # self.login = {'email': self.user, 'password': self.passwd}
 
         # Use a persistant connect, better for multiple requests
         self.session = requests.Session()
@@ -159,13 +154,17 @@ class OdkProject(OdkCentral):
         result = self.session.get(url, auth=self.auth)
         if result.status_code == 200:
             if disk:
-                filespec = "foo.csv"
+                now = datetime.now()
+                timestamp = f'{now.year}_{now.hour}_{now.minute}'
+                id = self.forms[0]['xmlFormId']
+                filespec = f'{id}_{timestamp}.csv'
                 try:
                     file = open(filespec, "xb")
                     file.write(result.content)
                 except FileExistsError:
                     file = open(filespec, "wb")
                     file.write(result.content)
+                logging.info("Wrote CSV file %s" % filespec)
                 file.close()
             return result.content
         else:
@@ -215,13 +214,20 @@ if __name__ == '__main__':
     root.addHandler(ch)
 
     project = OdkProject()
-    au = project.authenticate()
+    # Start the persistent HTTPS connection to the ODK Central server
+    project.authenticate()
+    # Get a list of all the projects on this ODK Central server
     project.listProjects()
-    project.listForms(4)
+    # List all the users on this ODK Central server
     project.listUsers()
+    # List all the forms for this project. FIXME: don't hardcode the project ID
+    project.listForms(4)
+    # List all the app users for this project. FIXME: don't hardcode the project ID
     project.listAppUsers(4)
+    # List all the submissions for this project. FIXME: don't hardcode the project ID a,d form name
     project.listSubmissions(4, "cemeteries")
-    project.getSubmission(4, "cemeteries")
+    project.getSubmission(4, "cemeteries", True)
+    # Dump all the internal data
     project.dump()
               
 

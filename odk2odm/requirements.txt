@@ -1,0 +1,5 @@
+epdb==0.15.1
+ExifRead==3.0.0
+Pillow==9.2.0
+requests==2.27.1
+requests_toolbelt==0.9.1

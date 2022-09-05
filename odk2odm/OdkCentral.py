@@ -328,9 +328,10 @@ class OdkForm(OdkCentral):
         xml = file.read()
         file.close()
         if self.draft:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version='
+            version = "09_04_2022v1a"
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version={version}'
         else:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version='
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version={version}'
         result = self.session.get(url, auth=self.auth, data=xml, headers=headers)
         return result
 
@@ -391,6 +392,6 @@ if __name__ == '__main__':
     # form.addMedia(csv2)
     x = form.createForm(4, 'cemeteries', "cemeteries.xls")
     print(x.json())
-    # x = form.uploadMedia(4, 'cemeteries', "towns.csv")
-    # print(x.json())
+    x = form.uploadMedia(4, 'cemeteries', "towns.csv")
+    print(x.json())
     form.dump()

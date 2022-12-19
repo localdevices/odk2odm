@@ -2,6 +2,10 @@ import json
 
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
+import os
+
+# This allows setting a custom token prefix, eg: "Bearer"
+token_prefix = os.getenv('ODM_TOKEN_PREFIX', 'JWT')
 
 ODM_TASK_DEFAULT_OPTIONS = {
     "dtm": True,
@@ -48,7 +52,7 @@ def get_options(base_url, token):
     url = f"{base_url}/api/processingnodes/options/"
     res = requests.get(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
     )
     return res
 
@@ -63,7 +67,7 @@ def get_projects(base_url, token):
     url = f"{base_url}/api/projects"
     res = requests.get(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
     )
     return res
 
@@ -80,7 +84,7 @@ def get_project(base_url, token, project_id):
     url = f"{base_url}/api/projects/{project_id}"
     res = requests.get(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
     )
     return res
 
@@ -97,7 +101,7 @@ def post_project(base_url, token, data={}):
     url = f"{base_url}/api/projects/"
     res = requests.post(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
         data=data
     )
     return res
@@ -115,7 +119,7 @@ def get_task(base_url, token, project_id, task_id):
     url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/"
     res = requests.get(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
     )
     return res
 
@@ -123,7 +127,7 @@ def get_thumbnail(base_url, token, project_id, task_id, filename):
     url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/images/thumbnail/{filename}"
     res = requests.get(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
     )
     return res
 
@@ -131,7 +135,7 @@ def get_image(base_url, token, project_id, task_id, filename):
     url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/images/download/{filename}"
     res = requests.get(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
     )
     return res
 
@@ -139,7 +143,7 @@ def get_options(base_url, token):
     url = f"{base_url}/api/processingnodes/options/"
     res = requests.get(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
     )
     return res
 
@@ -159,7 +163,7 @@ def patch_task(base_url, token, project_id, task_id, data={}, files={}):
         data["options"] = json.dumps(data["options"])
     res = requests.patch(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
         data=data,
         files=files,
     )
@@ -178,7 +182,7 @@ def post_task(base_url, token, project_id, data={}, files=[]):
 
     """
     url = f"{base_url}/api/projects/{project_id}/tasks/"
-    headers = {'Authorization': 'JWT {}'.format(token)}
+    headers = {'Authorization': '{} {}'.format(token_prefix, token)}
     if not("options" in data):
         # set a good set of default options in case user does not provide these
         data["options"] = ODM_TASK_DEFAULT_OPTIONS_LIST
@@ -208,7 +212,7 @@ def post_upload(base_url, token, project_id, task_id, fields={}):
         fields=fields
         )
     headers = {
-        'Authorization': 'JWT {}'.format(token),
+        'Authorization': '{} {}'.format(token_prefix, token),
         'Content-type': m.content_type,
     }
     res = requests.post(
@@ -222,7 +226,7 @@ def get_asset(base_url, token, project_id, task_id, asset):
     url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/download/{asset}"
     res = requests.get(
         url,
-        headers={'Authorization': 'JWT {}'.format(token)},
+        headers={'Authorization': '{} {}'.format(token_prefix, token)},
     )
     return res
 
@@ -238,7 +242,7 @@ def post_commit(base_url, token, project_id, task_id):
 
     """
     url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/commit/"
-    headers = {'Authorization': 'JWT {}'.format(token)}
+    headers = {'Authorization': '{} {}'.format(token_prefix, token)}
     res = requests.post(
         url,
         headers=headers,
@@ -257,7 +261,7 @@ def post_restart(base_url, token, project_id, task_id):
 
     """
     url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/restart/"
-    headers = {'Authorization': 'JWT {}'.format(token)}
+    headers = {'Authorization': '{} {}'.format(token_prefix, token)}
     res = requests.post(
         url,
         headers=headers,
@@ -276,7 +280,7 @@ def post_cancel(base_url, token, project_id, task_id):
 
     """
     url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/cancel/"
-    headers = {'Authorization': 'JWT {}'.format(token)}
+    headers = {'Authorization': '{} {}'.format(token_prefix, token)}
     res = requests.post(
         url,
         headers=headers,
@@ -295,7 +299,7 @@ def delete_task(base_url, token, project_id, task_id):
 POST /api/projects/{project_id}/tasks/{task_id}/remove/
     """
     url = f"{base_url}/api/projects/{project_id}/tasks/{task_id}/remove/"
-    headers = {'Authorization': 'JWT {}'.format(token)}
+    headers = {'Authorization': '{} {}'.format(token_prefix, token)}
     res = requests.post(
         url,
         headers=headers,
@@ -312,7 +316,7 @@ def delete_project(base_url, token, project_id):
     DELETE /api/projects/{project_id}
     """
     url = f"{base_url}/api/projects/{project_id}"
-    headers = {'Authorization': 'JWT {}'.format(token)}
+    headers = {'Authorization': '{} {}'.format(token_prefix, token)}
     res = requests.delete(
         url,
         headers=headers,
